@@ -6,13 +6,16 @@
 >
 > **Las cifras de estado también se midieron sobre las referencias de git**, no se recordaron: `upstream/sN/start` para el inicio de cada sesión y nuestra rama para el final. Lo que se cuenta son ficheros y declaraciones -rutas registradas, ficheros de prueba, comprobaciones, ADR, migraciones, requisitos de la spec-, porque son contables sin ejecutar nada. Los recuentos de **pruebas ejecutadas** salen de haberlas corrido, y se dice en cada caso.
 >
-> Última revisión: 2026-09-05.
+> **Para rehacerlo, no para leerlo**: los pasos concretos, con los comandos, están en [`guia-de-replicacion.md`](guia-de-replicacion.md). Este documento cuenta qué pasó; esa guía cuenta cómo volver a hacerlo.
+>
+> Última revisión: 2026-09-06.
 
 ## El resumen, antes del detalle
 
 | | S1 | S2 | S3 | S4 | S5 |
 |---|---|---|---|---|---|
 | **Tema** | Priming | Spec-Driven Development | OpenSpec | Verificación | Guardarraíles |
+| **Objetivo** | Dejar el entorno y el arnés listos, y probarlo con una feature real | Decidir qué construir antes de construirlo | Construir con SDD, y salir sabiendo **cuándo no usarlo** | Comprobar que lo construido hace lo que la spec dice | Contrastar las reglas declaradas contra lo que el repositorio hace |
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/portar-cierres-modulo-4` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#22](https://github.com/LIDR-academy/flowsync-ai4devs/pull/22) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
@@ -46,6 +49,14 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 
 ## S1 · Priming · 2026-08-19
 
+### Objetivo
+
+Dejar la máquina y el repositorio en condiciones de trabajar con un agente, y **comprobarlo construyendo algo de verdad**.
+
+El entregable visible es la autenticación en pantalla. El entregable real es el arnés: `CLAUDE.md`, las skills de `.claude/skills/`, el subagente `adversarial-reviewer` y el hook de formato. La feature es cómo se comprueba que el arnés funciona, no al revés.
+
+Lo que el módulo pide practicar, y aquí decidió el resultado: **contrastar el ticket contra el sistema en marcha antes de planificar**. El ticket pedía «registro (email+password)» y el validador exigía cuatro campos. Se vio con una petición real, no leyendo el código.
+
 ### Estado al empezar
 
 Una API que funciona y **ninguna pantalla que la use**. Cinco rutas registradas -alta, acceso, perfil, cierre de sesión y el saludo de la raíz-, dos migraciones, y un `frontend/` con el andamiaje de Vite recién creado: **cero páginas, cero rutas de navegación, cero ficheros de sesión, cero componentes propios**. Ni una prueba de ninguna clase, `docs/` sin existir, sin CI.
@@ -77,6 +88,14 @@ Es el primer caso del patrón que este proyecto acabaría persiguiendo: un halla
 ---
 
 ## S2 · Spec-Driven Development · 2026-08-24
+
+### Objetivo
+
+**Decidir qué construir antes de construirlo, y dejarlo escrito de forma que se pueda contrastar después.** PRD del MVP, alcance, y backlog con criterios de aceptación historia a historia.
+
+La trampa que el módulo enseña a evitar: un documento de producto que no se puede contradecir no sirve para nada. Por eso lo que se escribe no son intenciones sino **requisitos numerados y criterios de aceptación**, que es lo que en S4 permitió decir «el código no cumple RF-15» en vez de «esto no me convence».
+
+Y una parte del objetivo que no estaba en el guion y resultó ser la más útil: **auditar el repositorio antes de tocarlo**. De ahí salieron los diez primeros hallazgos.
 
 ### Estado al empezar
 
@@ -119,6 +138,19 @@ El producto exactamente como lo dejó S1, y **`docs/` vacío**: cero documentos,
 
 ## S3 · OpenSpec · 2026-08-25 y 26
 
+### Objetivo
+
+Construir una capability entera con un flujo SDD estructurado: **`propose` → gate humano → `apply` → `archive`**.
+
+Pero el entregable declarado del módulo **no es saber usar OpenSpec, sino el criterio de cuándo usarlo y cuándo no.** El instructor avisa explícitamente contra salir de la sesión usándolo para todo. El priming del módulo lo practica con dos tickets reales, uno por camino:
+
+| Camino | Cuándo | El ticket que se usó |
+|---|---|---|
+| **Delegación directa** | Un fichero, documentación desechable, sin trazabilidad | Restaurar el formato del esquema generado |
+| **OpenSpec** | Perdura, cruza capas, y el equipo debe revisar el contrato **antes** del código | La capability `tasks` entera |
+
+El punto de la sesión no es ninguno de los comandos: **es el gate humano.** Revisar un plan cuesta minutos; revisar un PR con dos días de código dentro cuesta un retrabajo.
+
 ### Estado al empezar
 
 Aquí ocurre **el primer salto de rama**, y conviene verlo porque explica todo lo que viene después. `upstream/s3/start` trae el PRD y el backlog **del curso**, que sustituyen a los nuestros. Nuestro Módulo 2 se queda intacto en `docs/alcance-mvp` y en su PR, como ejercicio propio, y esta rama arranca con 15 documentos que no son los que escribimos. `docs/estado-actual.md` y `docs/hallazgos.md` no están en ella.
@@ -159,6 +191,14 @@ Del producto: **cinco rutas, cero pruebas, dos migraciones**, y `openspec/` sin 
 ---
 
 ## S4 · Verificación · 2026-08-26 a 2026-09-02
+
+### Objetivo
+
+**Comprobar que lo construido hace lo que la spec dice, y dejar montado lo que lo siga comprobando sin ti.** Tres piezas: trazabilidad requisito a prueba, documentación que se contrasta contra el código, y revisión adversarial sobre el PR.
+
+El prework añade un ejercicio concreto: **cazar un «casi correcto» propio**, un sitio donde el agente produjo algo que parece correcto y no lo es. El que apareció aquí no estaba en el producto sino en el arnés, y se comprobó plantándolo: un fichero de prueba sin el hook de aislamiento dejó **21 pruebas en verde y una fila de test escrita en la base de desarrollo**.
+
+Ese es el modelo mental del módulo entero: **verde no es evidencia**. Lo que da evidencia es haber visto la comprobación fallar.
 
 ### Estado al empezar
 
@@ -215,6 +255,23 @@ Lo que eso significaba en concreto, y no se ve en la cuenta de rutas:
 ---
 
 ## S5 · Controles y guardarraíles · 2026-09-02 y 03
+
+### Objetivo
+
+**Contrastar las reglas que el repositorio declara contra lo que el repositorio hace**, y decidir cuáles hay que bajar a una capa que las ejecute.
+
+El modelo mental: **una regla escrita en un fichero es una petición, no una garantía.** Se cumple lo bastante como para que dejes de comprobarla, y entonces deja de cumplirse sin que nadie se entere.
+
+De ahí salen dos cosas que conviene no mezclar:
+
+| | Qué es | Dónde vive |
+|---|---|---|
+| **Modo de fallo** | Una **propiedad** de la regla. Se razona sin mirar nada. Decide en qué capa tiene que vivir | `CLAUDE.md` |
+| **Estado** | **Empírico**. Solo sale contrastando la regla contra el repositorio | `auditoria-reglas-de-proceso.md` |
+
+Escribir la primera y dar por hecha la segunda es exactamente cómo un fichero de reglas acaba siendo una lista de buenas intenciones.
+
+Y una tercera categoría, que es la que se olvida: **no se puede comprobar** no es un estado pendiente, es una propiedad de la regla. Ninguna comprobación sabe si un documento sigue siendo útil.
 
 **La sesión no se ha impartido.** Lo que hay es el prework y el trabajo de llegar con el terreno hecho.
 
@@ -273,3 +330,13 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 | - | **Dos aproximaciones al contrato conviven** | La generada de `s5/start` y ADR-0004, que la descarta. Es material de la sesión |
 
 Ninguno es deuda olvidada: los cuatro están declarados, y la diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender.
+
+---
+
+## Si quieres rehacerlo
+
+Los pasos, con los comandos y en orden, están en [`guia-de-replicacion.md`](guia-de-replicacion.md). Lleva además tres cosas que este documento no tiene:
+
+- **La lista de comprobación del salto de rama**, que es lo que aquí costó nueve defectos.
+- **Los cinco errores que más caros salieron**, cada uno con lo que lo destapó.
+- **Un glosario** de los términos que este recorrido usa sin explicar: spec viva, delta, gate humano, mutación, arrastre de hallazgos, modo de fallo.
