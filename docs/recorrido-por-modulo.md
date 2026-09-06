@@ -4,6 +4,8 @@
 >
 > Las fechas y la atribución de cada hallazgo salen del historial de git -del commit que introdujo cada entrada-, no de la memoria. Donde no se pudo verificar, se dice.
 >
+> **Las cifras de estado también se midieron sobre las referencias de git**, no se recordaron: `upstream/sN/start` para el inicio de cada sesión y nuestra rama para el final. Lo que se cuenta son ficheros y declaraciones -rutas registradas, ficheros de prueba, comprobaciones, ADR, migraciones, requisitos de la spec-, porque son contables sin ejecutar nada. Los recuentos de **pruebas ejecutadas** salen de haberlas corrido, y se dice en cada caso.
+>
 > Última revisión: 2026-09-05.
 
 ## El resumen, antes del detalle
@@ -14,8 +16,29 @@
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/portar-cierres-modulo-4` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#22](https://github.com/LIDR-academy/flowsync-ai4devs/pull/22) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
-| **Hallazgos** | — | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | H-23, y nueve que volvieron |
-| **Pruebas al cerrar** | 0 | 0 | 37 | 75 + 28 | 75 + 28 |
+| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | H-23, y nueve que volvieron |
+
+### Cómo cambió el proyecto, medido
+
+Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesión no lo tocó.
+
+| | S1 | S2 | S3 | S4 | S5 |
+|---|---|---|---|---|---|
+| Rutas de la API | 5 → 5 | - | **5 → 8** | 10 → 10 | 10 → 10 |
+| Ficheros de prueba, backend | 0 → 0 | - | **0 → 2** | **4 → 15** | **5 → 15** |
+| Ficheros de prueba, frontend | 0 → 0 | - | **0 → 1** | 0 → 1 | **0 → 1** |
+| Pruebas ejecutándose | 0 → 0 | - | **0 → 37 + 21** | **20 → 76 + 28** | **23 → 75 + 28** |
+| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 15** |
+| Workflows de CI | - | - | - | **0 → 2** | **0 → 2** |
+| ADR | - | - | - | **0 → 4** | 2 → **6** |
+| Migraciones | 2 → 2 | - | **2 → 5** | 4 → **6** | 4 → **6** |
+| Requisitos de spec, `tasks` | - | - | **0 → 16** | 32 → 33 | 32 → 33 |
+| Requisitos de spec, `auth` | - | - | **0 → 19** | 19 → 19 | 19 → 19 |
+| Documentos en `docs/` | 0 → 0 | **0 → 10** | 15 → 18 | **15 → 28** | **19 → 32** |
+
+**Los saltos de rama explican los números que no cuadran de una sesión a la siguiente.** Cada módulo arranca en `upstream/sN/start`, que es la versión del curso, no donde nosotros lo dejamos. Por eso S4 empieza con 10 rutas cuando S3 terminó con 8 -el curso añadió el detalle y la fecha por otro camino-, y por eso S5 empieza con 5 ficheros de prueba cuando S4 terminó con 15.
+
+**Ese salto es el mecanismo que produjo H-22 y los nueve defectos que volvieron.** No es una anomalía del curso: es la forma que tiene este proyecto de enseñar que un arreglo vive en una rama, no en el producto.
 
 **Diecisiete de los veintitrés hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
 
@@ -23,7 +46,27 @@
 
 ## S1 · Priming · 2026-08-19
 
-**Qué se hizo.** Autenticación en el frontend sobre la API que el repositorio ya traía: registro, acceso, perfil protegido y cierre de sesión, con guards de ruta y el token en `localStorage`.
+### Estado al empezar
+
+Una API que funciona y **ninguna pantalla que la use**. Cinco rutas registradas -alta, acceso, perfil, cierre de sesión y el saludo de la raíz-, dos migraciones, y un `frontend/` con el andamiaje de Vite recién creado: **cero páginas, cero rutas de navegación, cero ficheros de sesión, cero componentes propios**. Ni una prueba de ninguna clase, `docs/` sin existir, sin CI.
+
+Dicho de otro modo: el producto era un backend que solo se podía usar con `curl`.
+
+**Qué se hizo.** Autenticación en el frontend sobre esa API: registro, acceso, perfil protegido y cierre de sesión, con guards de ruta y el token en `localStorage`.
+
+### Estado al terminar
+
+| | Inicio | Fin |
+|---|---:|---:|
+| Páginas | 0 | **3** |
+| Rutas de navegación y guards | 0 | **3** |
+| Ficheros de sesión (`auth/`) | 0 | **3** |
+| Componentes propios | 0 | **8** |
+| Rutas de la API | 5 | 5, sin tocar |
+| Migraciones | 2 | 2, sin tocar |
+| **Pruebas** | **0** | **0** |
+
+Dos cosas que no cambiaron, y son las que definen la sesión: **el backend no se tocó**, y **no quedó ni una prueba**. Todo lo construido descansaba sobre revisión humana, y así siguió hasta S3.
 
 **Qué quedó.** Las pantallas de cuentas, `lib/api.ts` como único punto de contacto con el backend, y `auth/` con su proveedor de sesión.
 
@@ -35,9 +78,26 @@ Es el primer caso del patrón que este proyecto acabaría persiguiendo: un halla
 
 ## S2 · Spec-Driven Development · 2026-08-24
 
-**Qué se hizo.** El PRD del MVP, el alcance, y el backlog de la épica E2 con sus criterios de aceptación. Cero código de producto.
+### Estado al empezar
 
-**Qué quedó.** `docs/prd/`, `docs/backlog/` con doce ficheros, `docs/estado-actual.md` -la auditoría del repositorio- y **`docs/hallazgos.md`, que nace aquí**.
+El producto exactamente como lo dejó S1, y **`docs/` vacío**: cero documentos, cero requisitos escritos, cero historias. Había código de dos verticales -cuentas, en API y en pantalla; tareas, en ninguna capa- y **ningún documento decía qué debía hacer el producto**. La única fuente de verdad era el propio código.
+
+**Qué se hizo.** El PRD del MVP, el alcance, y el backlog de la épica E2 con sus criterios de aceptación. **Cero código de producto.**
+
+### Estado al terminar
+
+| | Inicio | Fin |
+|---|---:|---:|
+| Documentos en `docs/` | 0 | **10** |
+| Requisitos funcionales escritos | 0 | **RF-1 a RF-15** |
+| Historias con criterios de aceptación | 0 | **12 ficheros** |
+| Puntos abiertos declarados | 0 | **PA-1 a PA-6** |
+| Hallazgos registrados | - | **10** |
+| Rutas · pruebas · migraciones | 5 · 0 · 2 | **sin tocar** |
+
+**No cambió absolutamente nada del producto.** Ni una ruta, ni una prueba, ni una migración. Lo que cambió es que a partir de aquí existía algo contra lo que contrastar el código, y el contraste empezó a producir hallazgos de inmediato.
+
+**Qué quedó.** `docs/prd/`, `docs/backlog/` con doce ficheros, `docs/estado-actual.md` -la auditoría del repositorio- y **`docs/hallazgos.md`, que nace aquí** y acabó siendo el documento más consultado del proyecto.
 
 **Hallazgos: diez, de una vez.** H-01 a H-10, todos en el mismo commit del 2026-08-24. Y **ninguno es de código propio**: salieron de mirar el repositorio antes de tocarlo.
 
@@ -59,9 +119,31 @@ Es el primer caso del patrón que este proyecto acabaría persiguiendo: un halla
 
 ## S3 · OpenSpec · 2026-08-25 y 26
 
+### Estado al empezar
+
+Aquí ocurre **el primer salto de rama**, y conviene verlo porque explica todo lo que viene después. `upstream/s3/start` trae el PRD y el backlog **del curso**, que sustituyen a los nuestros. Nuestro Módulo 2 se queda intacto en `docs/alcance-mvp` y en su PR, como ejercicio propio, y esta rama arranca con 15 documentos que no son los que escribimos. `docs/estado-actual.md` y `docs/hallazgos.md` no están en ella.
+
+Del producto: **cinco rutas, cero pruebas, dos migraciones**, y `openspec/` sin existir. La gestión de tareas no estaba en ninguna capa: ni tabla, ni modelo, ni endpoint, ni pantalla.
+
 **Qué se hizo.** La gestión de tareas entera, con el flujo `propose → gate humano → apply`, y después la base de pruebas como segundo change.
 
-**Qué quedó.** La spec viva en `openspec/specs/` -`auth` por ingeniería inversa, `tasks` por delta-, tres changes archivados, la lista compartida con crear, cambiar estado, vencimiento y filtro, y las primeras 37 pruebas.
+### Estado al terminar
+
+| | Inicio | Fin |
+|---|---:|---:|
+| Rutas de la API | 5 | **8** |
+| Migraciones | 2 | **5** |
+| Requisitos de spec, `tasks` | 0 | **16** |
+| Requisitos de spec, `auth` | 0 | **19** |
+| Changes archivados | 0 | **3** |
+| Ficheros de prueba, backend | 0 | **2** |
+| Ficheros de prueba, frontend | 0 | **1** |
+| **Pruebas ejecutándose** | **0** | **37 backend + 21 frontend** |
+| Documentos en `docs/` | 15 | 18 |
+
+**El cambio que más pesa no es una cifra de funcionalidad.** El proyecto pasa de **cero pruebas a 58**, y de no tener spec a tener 35 requisitos con sus escenarios. Eso es lo que en el módulo siguiente permitió contrastar el código contra algo que no fuera el criterio de quien mira.
+
+**Qué quedó.** La spec viva en `openspec/specs/` -`auth` por ingeniería inversa, `tasks` por delta-, tres changes archivados, y la lista compartida con crear, cambiar estado, vencimiento y filtro.
 
 **Hallazgos: cuatro, y cada uno salió de una actividad distinta.**
 
@@ -78,9 +160,36 @@ Es el primer caso del patrón que este proyecto acabaría persiguiendo: un halla
 
 ## S4 · Verificación · 2026-08-26 a 2026-09-02
 
+### Estado al empezar
+
+Segundo salto de rama, y **el más caro de los tres**. `upstream/s4/start` llega a la misma funcionalidad que construimos en S3 **por otro camino**: **diez rutas** en vez de ocho -el curso añadió el detalle de la tarea y la fecha de vencimiento por su cuenta- y **32 requisitos** de `tasks` en vez de nuestros 16.
+
+Lo que eso significaba en concreto, y no se ve en la cuenta de rutas:
+
+- **Cuatro ficheros de prueba con 20 pruebas, todas de `auth`.** La capability `tasks` -lo que la sesión anterior había construido entero- **no tenía ni una prueba**.
+- `docs/hallazgos.md` no existía en esta rama, así que H-01 a H-14 no estaban a la vista de nadie que trabajase en ella.
+- Los arreglos de H-11, H-13 y H-14 se habían quedado en `s3/start`.
+- Cero comprobaciones automáticas de documentación, cero ADR, cero CI.
+
 **Qué se hizo.** Trazabilidad requisito a requisito, documentación que se contrasta en vez de regenerarse, y **siete revisiones adversariales seguidas**.
 
-**Qué quedó.** `docs/trazabilidad.md`, `scripts/verificar-docs.mjs` con quince comprobaciones que fallan la build, cuatro ADR, la integración continua, y de 20 a 75 pruebas de backend más 28 de frontend.
+### Estado al terminar
+
+| | Inicio | Fin |
+|---|---:|---:|
+| Ficheros de prueba, backend | 4 | **15** |
+| **Pruebas ejecutándose** | **20 + 0** | **76 backend + 28 frontend** |
+| Comprobaciones del verificador | 0 | **17** |
+| Workflows de CI | 0 | **2** |
+| ADR | 0 | **4** |
+| Migraciones | 4 | **6** |
+| Documentos en `docs/` | 15 | **28** |
+| Rutas de la API | 10 | 10, sin tocar |
+| Hallazgos suyos abiertos al cerrar | - | **0** |
+
+**Cero rutas nuevas y ochenta y cuatro pruebas más.** Es el módulo que mejor resume el curso: no añadió nada que un usuario pueda ver, y cambió el proyecto más que ninguno.
+
+**Qué quedó.** `docs/trazabilidad.md`, `scripts/verificar-docs.mjs` con diecisiete comprobaciones que fallan la build, cuatro ADR, y la integración continua.
 
 **Hallazgos: ocho, y ninguno era funcionalidad nueva.** Todos estaban ya en el código, con la suite en verde.
 
@@ -109,9 +218,34 @@ Es el primer caso del patrón que este proyecto acabaría persiguiendo: un halla
 
 **La sesión no se ha impartido.** Lo que hay es el prework y el trabajo de llegar con el terreno hecho.
 
-**Qué se hizo.** El prework entero, la auditoría de las catorce reglas de proceso del repositorio, la calibración del revisor, y **portar a `s5/start` los cierres del Módulo 4**.
+### Estado al empezar
 
-**Qué quedó.** `docs/auditoria-reglas-de-proceso.md` con la columna de estado deliberadamente sin rellenar, `.github/calibracion-revision.md`, los dos workflows, y la rama del port con 75 pruebas de backend y 28 de frontend donde había 23 y 0.
+Tercer salto de rama. Esta vez ya sabíamos lo que iba a pasar, así que **se midió antes de tocar nada**, fichero a fichero.
+
+`upstream/s5/start` trae **23 pruebas en cinco ficheros** -las cuatro de `auth` más una de responsable-, **dos ADR** que son los del curso, y el documento OpenAPI **generado** desde los decoradores de los controladores y servido en `/api`, que es exactamente el camino contrario al que había decidido nuestro ADR-0004.
+
+Lo que no cruzó: `docs/hallazgos.md`, `docs/trazabilidad.md`, `scripts/`, `.github/`, y el **runner de pruebas del frontend**, que desapareció otra vez.
+
+Y lo que la comparación fichero a fichero encontró antes de portar nada: **seis de los siete defectos que habíamos cerrado volvían rotos**. Al ejecutar las pruebas ya portadas aparecieron **tres más** que ninguna lectura había visto.
+
+**Qué se hizo.** El prework entero, la auditoría de las catorce reglas de proceso del repositorio, la calibración del revisor, y **portar los cierres del Módulo 4**.
+
+### Estado al terminar
+
+| | Inicio | Fin |
+|---|---:|---:|
+| Ficheros de prueba, backend | 5 | **15** |
+| **Pruebas ejecutándose** | **23 + 0** | **75 backend + 28 frontend** |
+| Comprobaciones del verificador | 0 | **15** |
+| Workflows de CI | 0 | **2** |
+| ADR | 2 | **6** |
+| Migraciones | 4 | **6** |
+| Documentos en `docs/` | 19 | **32** |
+| Defectos ya cerrados que seguían vivos | **9** | **0** |
+
+**Quince comprobaciones y no las diecisiete de S4**, y la diferencia es una decisión, no una pérdida: dos contrastaban un contrato escrito a mano y esta rama lo genera, así que aquí habrían sido comprobaciones vacías. Otras dos se reapuntaron a los decoradores, que es donde sí queda algo que contrastar, y encontraron dos defectos del contrato generado.
+
+**Qué quedó.** `docs/auditoria-reglas-de-proceso.md` con la columna de estado deliberadamente sin rellenar, `.github/calibracion-revision.md`, los dos workflows, y la rama del port.
 
 **Hallazgos: uno nuevo, y nueve que volvieron.**
 
@@ -134,8 +268,8 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 | | Qué | Por qué |
 |---|---|---|
 | **H-23** | Cuatro rutas fuera del contrato generado | Decorarlas exige esquemas que esta rama no tiene. Vigilado con lista cerrada |
-| — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
-| — | El revisor adversarial en CI | Escrito y sin credencial. Hasta que se le vea encontrar algo, **no cuenta** |
-| — | **Dos aproximaciones al contrato conviven** | La generada de `s5/start` y ADR-0004, que la descarta. Es material de la sesión |
+| - | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
+| - | El revisor adversarial en CI | Escrito y sin credencial. Hasta que se le vea encontrar algo, **no cuenta** |
+| - | **Dos aproximaciones al contrato conviven** | La generada de `s5/start` y ADR-0004, que la descarta. Es material de la sesión |
 
 Ninguno es deuda olvidada: los cuatro están declarados, y la diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender.
