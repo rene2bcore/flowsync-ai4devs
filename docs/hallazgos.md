@@ -13,6 +13,20 @@
 >
 > **Cada entrada dice qué rama describe.** No es formalismo: el 2026-09-02 se comprobaron una a una las que figuraban cerradas y **tres estaban vivas en `s4/start`** -H-11, H-13 y H-14- porque su arreglo nunca cruzó desde `s3/start`. Un «Resuelto» sin rama no dice nada.
 
+## Índice por módulo
+
+Qué encontró cada módulo. La atribución sale del commit que introdujo cada entrada, no de la memoria.
+
+| Módulo | Qué se estaba haciendo cuando salió | Hallazgos |
+|---|---|---|
+| **1** · Priming | Autenticación en el frontend | Ninguno registrado. Los del PR #12 se arreglaron en el mismo commit y no llegaron a este registro, que aún no existía |
+| **2** · Spec-Driven Development | Auditar el repositorio para escribir el PRD y el backlog | **H-01 a H-10**. Diez de golpe, ninguno de código propio: salieron de **mirar** el repositorio antes de tocarlo |
+| **3** · OpenSpec | La spec viva de `auth`, la gestión de tareas y la base de pruebas | **H-11** (al escribir la spec viva), **H-12** (al montar las pruebas), **H-13 y H-14** (revisión adversarial del PR #15) |
+| **4** · Verificación | Trazabilidad, documentación contrastada y siete revisiones adversariales | **H-15 a H-21** de una vez, y **H-22** al cerrar. Ninguno era funcionalidad nueva: todos estaban ya en el código |
+| **5** · Guardarraíles (prework) | Portar los cierres del Módulo 4 a `s5/start` | **H-23**. Y nueve de los cerrados **volvieron rotos**, tres de ellos descubiertos al ejecutar las pruebas portadas, no al leer |
+
+**El patrón que dibuja esta tabla**: los dos módulos que no añadieron funcionalidad -el 2 y el 4- produjeron **diecisiete de los veintitrés hallazgos**. Mirar encuentra más que construir.
+
 ## Índice por severidad
 
 | # | Hallazgo | Severidad | Estado |
@@ -39,6 +53,7 @@
 | H-20 | Dos requisitos de la spec viva se contradecían sobre `today` | Media | **Resuelto (2026-08-26)** |
 | H-21 | El orden de validación difiere entre controladores | Baja | **Resuelto (2026-09-02)** · ADR-0006 |
 | H-22 | La tabla «Lo que se arrastra» dio por cerrados tres hallazgos sin comprobarlos en la rama | Alta | **Resuelto (2026-09-02)** |
+| H-23 | Cuatro rutas de `auth` están fuera del contrato generado | Media | Abierto · declarado con lista cerrada |
 
 > **Al abrir el Módulo 5**, la comprobación contra `s5/start` dice que **seis de los siete** vuelven rotos: H-11, H-13, H-14, H-15, H-16 y H-19. Solo H-17 llega arreglado. Evidencia y plan de acción de cada uno en la sección «Al abrir el Módulo 5», más abajo.
 
@@ -605,6 +620,24 @@ La regla que ese mismo commit escribió dice, literalmente: «**Lo que no vale**
 Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta es la herramienta que lo mediría.** `CLAUDE.md` decía «el frontend no tiene runner de tests en esta rama», y se leía como una limitación del curso cuando era algo que teníamos y perdimos.
 
 **Lo que no se arregla con código**: comprobar una fila cuesta minutos y darla por buena cuesta cero. Lo único que lo sostiene es que la columna «Estado» nombre la rama y la fecha en que se miró, no un «Cerrado» a secas.
+
+---
+
+## H-23 · Cuatro rutas de `auth` están fuera del contrato generado
+
+**Rama: `s5/start`. Severidad: media.** Abierto, y **declarado con lista cerrada**.
+
+`signup`, `login`, `logout` y `profile` no llevan decoradores de `@foadonis/openapi`, así que el documento servido en `/api` y `/api.json` **las omite**. Cuatro de las nueve rutas de la API no existen para quien integre leyendo el contrato.
+
+**Cómo se verificó**: contra el servidor de la rama. `/api.json` devuelve las cinco operaciones de tareas y ninguna de cuentas. Séptima revisión adversarial, 2026-09-02.
+
+**Por qué no lo encontró nadie antes**: porque un generador **escribe fielmente lo que hay decorado y no dice nada de lo que no lo está**. No hay hueco visible: el documento sale bien formado, completo de su parte, y en silencio sobre el resto. Es el argumento de [ADR-0004](adr/0004-la-documentacion-se-verifica-no-se-regenera.md) llegando por una puerta que no habíamos previsto.
+
+**Por qué se deja abierto**: decorarlas exige esquemas de respuesta -`UserResponse`, `AuthResult`, los cuerpos de alta y acceso- que `app/openapi/schemas.ts` no tiene. Eso es trabajo del módulo sobre esta rama, no de un traslado, y hacerlo dentro del port habría hecho que el PR hiciera algo que no declara.
+
+**Qué lo vigila mientras tanto**: una comprobación del verificador con **lista cerrada** de los tres controladores conocidos. No pudre en ninguna de las dos direcciones: si aparece un cuarto controlador sin decorar, falla; y si alguien decora uno de estos tres y no lo quita de la lista, también.
+
+> **Y este hallazgo estuvo tres días sin registrar.** Se le puso número en `scripts/verificar-docs.mjs` y en `docs/capabilities/tasks/README.md` el 2026-09-02, y la entrada no existía: `hallazgos.md` no tenía ningún `H-23`. Un número citado en dos sitios que no apunta a nada es peor que no numerarlo, porque quien lo lea creerá que hay algo escrito. Registrado el 2026-09-05.
 
 ---
 
