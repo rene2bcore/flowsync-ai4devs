@@ -627,7 +627,9 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 **Rama: `s5/start`. Severidad: media.** Abierto, y **declarado con lista cerrada**.
 
-`signup`, `login`, `logout` y `profile` no llevan decoradores de `@foadonis/openapi`, así que el documento servido en `/api` y `/api.json` **las omite**. Cuatro de las nueve rutas de la API no existen para quien integre leyendo el contrato.
+`signup`, `login`, `logout` y `profile` no llevan decoradores de respuesta de `@foadonis/openapi`, así que el documento las publica **con `responses: {}`**: cuatro de las nueve rutas de la API no dicen nada de lo que devuelven.
+
+> **Corrección del 2026-09-08.** Esta entrada decía que el documento «las omite» y que «no existen para quien integre leyendo el contrato». **Es falso**: las cuatro rutas están en el documento, con su método y su ruta. Lo que falta son sus respuestas. La diferencia importa, porque una ruta ausente se nota al integrar y una ruta presente y vacía no. Lo encontró la octava revisión adversarial, y por el camino encontró algo peor: ver **H-25**.
 
 **Cómo se verificó**: contra el servidor de la rama. `/api.json` devuelve las cinco operaciones de tareas y ninguna de cuentas. Séptima revisión adversarial, 2026-09-02.
 
@@ -649,8 +651,12 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 | Repositorio | Evento | Ejecuciones | Resultado |
 |---|---|---:|---|
-| `LIDR-academy/flowsync-ai4devs` | `pull_request` | **16** | **`action_required`. Ninguna ha ejecutado un solo paso** |
-| `rene2bcore/flowsync-ai4devs` | `push` | 10 | `success`, y los tres jobs corrieron de verdad |
+| `LIDR-academy/flowsync-ai4devs` | `pull_request` | **35** | **`action_required`. Ninguna ha ejecutado un solo paso** |
+| `rene2bcore/flowsync-ai4devs` | `push` | 47 | 46 en verde y 1 en rojo, con los tres jobs ejecutados |
+
+> **Estas cifras estuvieron mal, y el error es del tipo que este documento persigue.** El 2026-09-08 decían 16 y 10. Salieron de `gh run list`, que **devuelve veinte filas por defecto**: se contó una página, no los casos. Lo encontró la octava revisión adversarial y lo corrigió `--limit`.
+>
+> Es el hermano de [R-06](auditoria-reglas-de-proceso.md) -leer una salida truncada en vez del dato- y contradice el paso 2 del método que el propio documento de auditoría declara: «contar los casos, no dar una impresión». Y falló **en la dirección que minimiza el hallazgo**: son más del doble.
 
 **Lo que sí funciona**: en nuestro fork, sobre `push`, los tres jobs -Backend, Frontend y «La documentación corresponde con el código»- se ejecutan y pasan. Comprobado abriendo una ejecución y mirando sus jobs, no el color del resumen.
 
@@ -675,6 +681,32 @@ Se comprobó en las dos direcciones, que es lo que la hace contar:
 Es decir: el evento no solo corre, **muerde**. Y encontró en su primera ejecución un defecto que el verde en local no podía ver.
 
 **Lo que la mitigación no resuelve**: el PR que el curso mira sigue siendo el de `LIDR-academy`, y ahí los checks siguen sin correr. Son dos PR para el mismo cambio, uno donde se ejecuta y otro donde se lee. Cerrarlo del todo depende de que un mantenedor del repositorio base apruebe las ejecuciones, y eso no está en nuestra mano.
+
+## H-25 · El contrato versionado declaraba públicas dos rutas protegidas
+
+**Rama: `feat/sesion-5-guardarrailes`. Severidad: alta.** **Cerrado** el 2026-09-08, el mismo día que se introdujo.
+
+`docs/api/openapi.json` publicaba `GET /api/v1/account/profile` y `POST /api/v1/account/logout` con **`"security": []`**.
+
+En OpenAPI eso **no** significa «no se ha dicho nada»: es la forma explícita de decir **«esta ruta no exige autenticación»**, y anula cualquier requisito global. El documento las declaraba públicas, al lado de `/api/v1/tasks`, que sí llevaba `"security": [{"bearer": []}]`. Las dos las protege `middleware.auth()` desde siempre.
+
+**Por qué es peor que H-23, con el que se confundía.** Una ruta sin respuestas documentadas se nota al integrar: no hay nada que leer. Una ruta que **afirma** ser pública no se nota: quien integre leyendo el contrato escribirá un cliente sin cabecera, lo probará, recibirá `401`, y buscará el error en su código antes que en el documento.
+
+**Cómo se encontró**: octava revisión adversarial, sobre el PR de la sesión, contrastando el contrato contra `openspec/specs/auth/spec.md` y `backend/tests/functional/auth/session.spec.ts`.
+
+**Por qué no lo vio nada más.** Tres capas fallaron a la vez, y esa es la parte que enseña:
+
+| | Por qué no |
+|---|---|
+| `scripts/verificar-docs.mjs` | **No abría `docs/api/openapi.json`** en ninguna de sus quince comprobaciones |
+| `openapi:check` | Compara el fichero contra el documento generado. Los dos decían lo mismo, y lo que decían era falso |
+| `REVIEW.md` | Ponía `docs/api/openapi.json` en «ficheros generados: no reportar», retirando de la revisión el único artefacto que lo afirmaba |
+
+**Arreglo**: `@ApiBearerAuth()` en `ProfileController.show` y `AccessTokensController.destroy`.
+
+**Qué lo vigila**: una comprobación nueva del verificador que pregunta al framework qué rutas llevan `middleware.auth()` -no lo deduce del fuente ni del nombre- y exige que cada una declare un esquema de seguridad no vacío en el contrato versionado. Vista fallar en las dos direcciones: quitando el decorador («el contrato las declara publicas») y borrando la ruta del fichero («protegidas y fuera del contrato»).
+
+**Y la lección de método**: un guardarraíl que compara dos artefactos **derivados de la misma fuente** no puede detectar que la fuente miente. `openapi:check` estaba en verde y tenía razón: el fichero era idéntico al documento generado. Hacía falta contrastar contra algo que **no** viniera del generador, y eso fue el listado de rutas del framework.
 
 ---
 

@@ -248,7 +248,7 @@ jobs:
             echo "## Revisión adversarial"
             echo
             echo "> Automática, sobre \`${{ github.sha }}\`. Read-only, no bloquea."
-            echo "> Los criterios están en [\`.github/calibracion-revision.md\`](.github/calibracion-revision.md)."
+            echo "> Los criterios están en [\`REVIEW.md\`](REVIEW.md), que es la que se le inyecta."
             echo
             cat /tmp/informe.md
           } > /tmp/comentario.md

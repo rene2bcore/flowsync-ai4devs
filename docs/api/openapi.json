@@ -386,7 +386,11 @@
         ],
         "responses": {},
         "parameters": [],
-        "security": []
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/v1/account/profile": {
@@ -396,7 +400,11 @@
         ],
         "responses": {},
         "parameters": [],
-        "security": []
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/v1/tasks": {

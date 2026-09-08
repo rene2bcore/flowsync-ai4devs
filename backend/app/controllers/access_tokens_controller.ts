@@ -2,6 +2,7 @@ import User from '#models/user'
 import { loginValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import UserTransformer from '#transformers/user_transformer'
+import { ApiBearerAuth } from '@foadonis/openapi/decorators'
 
 export default class AccessTokensController {
   async store({ request, serialize }: HttpContext) {
@@ -16,6 +17,9 @@ export default class AccessTokensController {
     })
   }
 
+  // `store` es pública a propósito -es el acceso-; `destroy` no. Ver el
+  // comentario de `ProfileController`: el contrato las declaraba iguales.
+  @ApiBearerAuth()
   async destroy({ auth }: HttpContext) {
     const user = auth.getUserOrFail()
     if (user.currentAccessToken) {

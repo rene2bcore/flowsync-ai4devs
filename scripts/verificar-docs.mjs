@@ -60,14 +60,20 @@ function comprobar(nombre, fn) {
  * El framework sabe que rutas tiene. Preguntarselo cuesta unos segundos y
  * elimina de golpe toda esa clase de fallo.
  */
-function rutasDelCodigo() {
+let listadoCache = null
+/**
+ * Salida cruda de `node ace list:routes --json`, cacheada: la piden dos
+ * comprobaciones y arrancar la aplicacion cuesta segundos.
+ */
+function listadoDeRutas() {
+  if (listadoCache) return listadoCache
+
   if (!existsSync(join(RAIZ, 'backend/node_modules'))) {
     throw new Error('falta backend/node_modules: ejecuta `npm ci` dentro de backend/')
   }
 
-  let salida
   try {
-    salida = execFileSync('node', ['ace', 'list:routes', '--json'], {
+    listadoCache = execFileSync('node', ['ace', 'list:routes', '--json'], {
       cwd: join(RAIZ, 'backend'),
       encoding: 'utf8',
       maxBuffer: 16 * 1024 * 1024,
@@ -80,6 +86,12 @@ function rutasDelCodigo() {
     const detalle = [error.stdout, error.stderr].filter(Boolean).join('\n').trim()
     throw new Error(`no se pudieron leer las rutas: ${detalle || error.message}`)
   }
+
+  return listadoCache
+}
+
+function rutasDelCodigo() {
+  const salida = listadoDeRutas()
 
   const rutas = new Set()
   const recorrer = (nodo) => {
@@ -107,6 +119,73 @@ function rutasDelCodigo() {
 
   return rutas
 }
+
+/**
+ * Rutas que el framework protege con `middleware.auth()`, preguntadas igual que
+ * las demas: no se deduce de `start/routes.ts` ni del nombre del controlador.
+ *
+ * Existe por el hallazgo de la octava revision adversarial: el contrato
+ * versionado declaraba `security: []` en `/account/profile` y
+ * `/account/logout`, que en OpenAPI **no** es «no se ha dicho nada» sino «esta
+ * ruta es publica». Las dos las protege el middleware desde siempre.
+ */
+function rutasProtegidasDelCodigo() {
+  const protegidas = new Set()
+  const recorrer = (nodo) => {
+    if (Array.isArray(nodo)) return nodo.forEach(recorrer)
+    if (!nodo || typeof nodo !== 'object') return
+
+    if (nodo.pattern && Array.isArray(nodo.middleware)) {
+      const exigeSesion = nodo.middleware.some((m) => m && m.name === 'auth')
+      if (exigeSesion) {
+        for (const metodo of nodo.methods ?? []) protegidas.add(`${metodo} ${nodo.pattern}`)
+      }
+    }
+    Object.values(nodo).forEach(recorrer)
+  }
+  recorrer(JSON.parse(listadoDeRutas()))
+
+  if (!protegidas.size) {
+    throw new Error('ninguna ruta declara `middleware.auth()`: el listado no se ha leido bien')
+  }
+  return protegidas
+}
+
+/** Clave `METODO /ruta` del contrato, con `{id}` normalizado a `:id`. */
+const claveDeOperacion = (metodo, ruta) =>
+  `${metodo.toUpperCase()} ${ruta.replace(/\{([^}]+)\}/g, ':$1')}`
+
+comprobar('El contrato versionado no declara publica ninguna ruta protegida', () => {
+  const contrato = JSON.parse(leer('docs/api/openapi.json'))
+  const protegidas = rutasProtegidasDelCodigo()
+  const mentiras = []
+
+  for (const [ruta, operaciones] of Object.entries(contrato.paths ?? {})) {
+    for (const [metodo, operacion] of Object.entries(operaciones)) {
+      const clave = claveDeOperacion(metodo, ruta)
+      if (!protegidas.has(clave)) continue
+
+      // `security: []` es una negacion explicita y gana sobre la global; que
+      // falte el campo hereda la del documento. Los dos casos se miran.
+      const seguridad = operacion.security ?? contrato.security ?? []
+      if (!seguridad.length) mentiras.push(clave)
+    }
+  }
+
+  if (mentiras.length) {
+    throw new Error(`el contrato las declara publicas: ${mentiras.join(', ')}`)
+  }
+
+  const documentadas = Object.entries(contrato.paths ?? {}).flatMap(([r, ops]) =>
+    Object.keys(ops).map((m) => claveDeOperacion(m, r))
+  )
+  const ausentes = [...protegidas].filter((r) => !documentadas.includes(r))
+  if (ausentes.length) {
+    throw new Error(`protegidas y fuera del contrato: ${ausentes.join(', ')}`)
+  }
+
+  return `${protegidas.size} rutas protegidas, todas con esquema bearer`
+})
 
 comprobar('La regla de vencimiento comprueba sus tres condiciones', () => {
   const modelo = leerCodigo('backend/app/models/task.ts')

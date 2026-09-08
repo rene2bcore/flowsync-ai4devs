@@ -6,9 +6,9 @@
 >
 > Hasta el 2026-09-08 la columna de estado iba **deliberadamente sin rellenar**, salvo dos filas: era el ejercicio de la sesión, y rellenarla antes destruye lo único interesante, que es la distancia entre lo que uno cree y lo que sale. Esa distancia está ahora medida y en la sección 1 bis.
 >
-> **Una de las dos excepciones era falsa, y es el primer hallazgo del ejercicio.** `R-05` decía **Se cumple** porque «su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo». Corre en CI **solo en nuestro fork y solo sobre `push`**; sobre el pull request lleva **dieciséis ejecuciones sin ejecutarse**. Y el job **nunca se había visto en rojo**: las mutaciones se hicieron en local. Es [H-24](hallazgos.md), que ese mismo día quedó mitigado abriendo el cambio también como PR dentro del fork -y ahí el job se puso en rojo a la primera, por un defecto que el verde local no veía-. La otra excepción, `R-13`, sigue en pie: **No se puede comprobar** no es un estado pendiente sino una propiedad de la regla.
+> **Una de las dos excepciones era falsa, y es el primer hallazgo del ejercicio.** `R-05` decía **Se cumple** porque «su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo». Corre en CI **solo en nuestro fork y solo sobre `push`**; sobre el pull request lleva **treinta y cinco ejecuciones sin ejecutarse**. Y el job **nunca se había visto en rojo**: las mutaciones se hicieron en local. Es [H-24](hallazgos.md), que ese mismo día quedó mitigado abriendo el cambio también como PR dentro del fork -y ahí el job se puso en rojo a la primera, por un defecto que el verde local no veía-. La otra excepción, `R-13`, sigue en pie: **No se puede comprobar** no es un estado pendiente sino una propiedad de la regla.
 >
-> **Cómo se rellenó.** Con `git log`, `git rev-list` y `gh run list` sobre los **61 commits nuestros** -los que no están en ninguna rama del curso- y las **26 ejecuciones de CI** de los dos repositorios. Donde no hay rastro comprobable, se dice; no se rellena con impresión.
+> **Cómo se rellenó.** Con `git log`, `git rev-list` y `gh run list` sobre los **61 commits nuestros** -los que no están en ninguna rama del curso- y las **82 ejecuciones de CI** de los dos repositorios. Donde no hay rastro comprobable, se dice; no se rellena con impresión.
 
 ## Por qué existe este documento
 
@@ -67,7 +67,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 | R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | **Se cumple.** **6 unidades de trabajo, 6 PR**: #12, #14, #15, #21, #22 y #26. Ninguna se quedó sin abrir |
 | R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple a mano; no se cumple automáticamente.** **7 revisiones** ejecutadas en local, todas con hallazgos reales. El job **no ha revisado nunca**: sin credencial, se omite en verde |
 | R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **No se puede comprobar.** No hay repositorio donde mirarlo. Es la misma categoría que R-13, en pequeño |
-| R-05 | Un cambio en rutas, controladores o validadores cierra con el contrato al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple en local, y desde el 2026-09-08 también en un PR del fork.** El script muerde -15 comprobaciones, vistas fallar mutando-. El **job se ha visto en rojo** sobre `pull_request`, y encontró un defecto que el verde local no veía. En el PR del curso sigue sin correr: 16 en `action_required`. Es [H-24](hallazgos.md) |
+| R-05 | Un cambio en rutas, controladores o validadores cierra con el contrato al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple en local, y desde el 2026-09-08 también en un PR del fork.** El script muerde -16 comprobaciones, vistas fallar mutando-. El **job se ha visto en rojo** sobre `pull_request`, y encontró un defecto que el verde local no veía. En el PR del curso sigue sin correr: 35 en `action_required`. Es [H-24](hallazgos.md) |
 | R-06 | Verificar por código de salida, nunca por la última línea impresa | **Silencioso** | Nada lo comprueba. Es una forma de mirar | **No se puede comprobar desde el repositorio.** Ningún artefacto registra cómo se miró un resultado. Lo único que deja rastro son los mensajes de commit que citan la salida, y eso mide lo que se escribe, no lo que se hizo |
 | R-07 | `hallazgos.md` se arrastra entre ramas y se comprueba entrada a entrada | **Silencioso** | Parcialmente ejecutado: la comprobación exige la sección «Lo que se arrastra» con su tabla | **Se incumplió dos veces y luego se cumplió.** En `s3/start → s4/start` no cruzó: `hallazgos.md` no existía en la rama y tres arreglos se perdieron. En `s4/start → s5/start` se hizo fichero a fichero y **encontró nueve defectos vivos**. La primera tabla que aplicaba la regla la incumplió el mismo día: [H-22](hallazgos.md) |
 
@@ -125,7 +125,7 @@ Nuestro caso es además **más fuerte que el del directo**: allí el veredicto f
 
 R-13 no está pendiente de comprobar: **no se puede comprobar**, y decirlo es más honesto que dejarla como aspiración.
 
-Ninguna comprobación sabe si un documento sigue siendo útil. Sabe si sigue **coincidiendo con el código**, que es otra cosa, y es exactamente lo que hace `scripts/verificar-docs.mjs` con sus quince comprobaciones en esta rama -las del verificador, que no tienen que ver con las catorce reglas de la tabla de arriba. Un documento puede coincidir con el código al milímetro y no servirle a nadie.
+Ninguna comprobación sabe si un documento sigue siendo útil. Sabe si sigue **coincidiendo con el código**, que es otra cosa, y es exactamente lo que hace `scripts/verificar-docs.mjs` con sus dieciséis comprobaciones en esta rama -las del verificador, que no tienen que ver con las catorce reglas de la tabla de arriba. Un documento puede coincidir con el código al milímetro y no servirle a nadie.
 
 Lo mismo vale para R-04, en pequeño: «no repitas el resumen en el chat» es una regla sobre lo que se dice, y no hay repositorio donde mirarlo.
 
@@ -161,6 +161,10 @@ Dos decisiones del job que conviene tener presentes al auditarlo:
 ## 5 · Cómo se rellenó la columna de estado
 
 El 2026-09-08, con evidencia y no de memoria. Para cada regla:
+
+> **Un aviso ganado el mismo día.** Las cifras de CI de la primera versión de esta tabla -16 y 10- salieron de `gh run list`, que **devuelve veinte filas por defecto**. Se contó una página, no los casos, en el documento que declara «contar los casos, no dar una impresión». Corregido a 35 y 47 con `--limit`, tras la octava revisión adversarial.
+>
+> Que el error viviera precisamente aquí no es casualidad: **el paso 2 es el más fácil de creer que has hecho.** Ejecutar el comando se siente como contar.
 
 1. **Buscar en el repositorio lo que la regla predice.** Si dice que cada bug deja una prueba, los commits de arreglo tienen que traer un fichero de pruebas tocado.
 2. **Contar los casos, no dar una impresión.** «Casi siempre» sin número es la respuesta que este ejercicio existe para desmontar.

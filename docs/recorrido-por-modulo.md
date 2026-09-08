@@ -19,7 +19,7 @@
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/sesion-5-guardarrailes` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#26](https://github.com/LIDR-academy/flowsync-ai4devs/pull/26) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
-| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 y H-24**, y nueve que volvieron |
+| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23, H-24 y H-25**, y nueve que volvieron |
 
 ### Cómo cambió el proyecto, medido
 
@@ -43,7 +43,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 
 **Ese salto es el mecanismo que produjo H-22 y los nueve defectos que volvieron.** No es una anomalía del curso: es la forma que tiene este proyecto de enseñar que un arreglo vive en una rama, no en el producto.
 
-**Diecisiete de los veinticuatro hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
+**Diecisiete de los veinticinco hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
 
 ---
 
@@ -308,13 +308,15 @@ Y lo que la comparación fichero a fichero encontró antes de portar nada: **sei
 
 Las tres demos, en orden, y cada una dejó algo que el prework no tenía.
 
-**Demo 1 · auditar las reglas contra el historial.** La columna de estado se rellenó con 61 commits y 26 ejecuciones de CI, contando casos. Salió **H-24**, y es el hallazgo del módulo: `verificacion.yml` lleva **16 ejecuciones en `action_required`** en el repositorio donde viven nuestros PR, sin haber ejecutado un solo paso. Corre solo en nuestro fork, sobre `push`, donde nadie del equipo lo mira.
+**Demo 1 · auditar las reglas contra el historial.** La columna de estado se rellenó con 61 commits y 26 ejecuciones de CI, contando casos. Salió **H-24**, y es el hallazgo del módulo: `verificacion.yml` lleva **35 ejecuciones en `action_required`** en el repositorio donde viven nuestros PR, sin haber ejecutado un solo paso. Corre solo en nuestro fork, sobre `push`, donde nadie del equipo lo mira.
 
 Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron donde se esperaba: **R-01 no se cumple** -45 commits directos sobre ramas `sN/*`-, **R-08 se cumple 10 de 12** cuando la intuición decía `casi nunca`, y **R-10 es vacuamente cierta** porque en este repositorio no hay hooks de git.
 
 **Demo 2 · el guardarraíl visto fallar.** Cerró la decisión que llevaba abierta desde el Módulo 4: el contrato se genera, se versiona en `docs/api/openapi.json`, y lo que corre en CI es la comprobación de que los dos coinciden ([ADR-0007](adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md)). Renombrando `profile` a `perfil`: salida **1** nombrando las rutas JSON, y **8 de 75** pruebas en rojo. Revertido, los dos a 0.
 
 **Y una avería que el verde local no podía ver.** Los dos comandos nacieron en `backend/commands/` y en Linux rompían **la build entera**: cualquier `node ace` escanea ese directorio, así que se llevaban por delante también `npm test`. En local, los dos comandos y las 75 pruebas estaban en verde. Lo dijo ejecutarlo en otra máquina.
+
+**Y la octava revisión adversarial, que encontró dos cosas en el trabajo de la propia sesión.** Que el contrato versionado declaraba **públicas** dos rutas protegidas -`security: []` en OpenAPI no es «no se ha dicho nada», es «no exige sesión»- y que **las cifras de CI del hallazgo estaban mal**: 16 y 10 eran una página de `gh run list`, no una cuenta. Son 35 y 47. [H-25](hallazgos.md), y la corrección de H-24.
 
 **Demo 3 · el revisor que llega solo.** `REVIEW.md` en la raíz, una pantalla, es lo que se inyecta; la calibración larga se queda con el porqué. **No se adoptó la acción oficial** del directo, y por H-24: exige que el PR viva donde está instalada la GitHub App, y los nuestros no. Queda documentada la trampa del OIDC para el día que eso cambie: sin `github_token`, el job **se salta a sí mismo en verde**.
 
@@ -325,9 +327,10 @@ Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron
 | Reglas con estado contrastado | **0 de 14** | **14 de 14** |
 | ADR | 6 | **7** |
 | Contrato versionado en un fichero | no | **sí**, con su check |
+| Comprobaciones del verificador | 15 | **16** |
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
-| Hallazgos | H-23 | H-23, **H-24** |
+| Hallazgos | H-23 | H-23 corregido, **H-24 y H-25** |
 
 **Hallazgos del prework: uno nuevo, y nueve que volvieron.**
 

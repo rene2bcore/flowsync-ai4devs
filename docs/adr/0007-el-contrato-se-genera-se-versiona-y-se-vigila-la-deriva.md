@@ -31,7 +31,7 @@ Tres piezas, y ninguna sustituye a las otras:
 
 1. **`npm run openapi:generate`** escribe `docs/api/openapi.json` desde el documento que construye `@foadonis/openapi`. Es manual, a propósito.
 2. **`npm run openapi:check`** compara el fichero contra el documento generado y **sale con código distinto de cero** si difieren, nombrando las rutas JSON. **No arregla nada.**
-3. **`scripts/verificar-docs.mjs` sigue como estaba**, con sus quince comprobaciones de diseño.
+3. **`scripts/verificar-docs.mjs` gana una comprobación**, y ahora sí abre `docs/api/openapi.json`: son dieciséis.
 
 La separación entre la 2 y la 3 es el fondo de esta decisión. **Un generador no puede afirmar lo que la 3 afirma.** Ninguno de los tres defectos del Módulo 4 se habría notado en un OpenAPI generado: habría documentado fielmente que el filtro acepta cualquier cadena. Por eso el contraste no se retira; se le quita el trabajo que un generador hace mejor -la forma de las rutas- y se le deja el que solo él puede hacer: que la regla de vencimiento tenga sus tres condiciones, que la comparación sea estricta, que el responsable no exponga la cuenta.
 
