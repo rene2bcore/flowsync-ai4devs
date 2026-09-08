@@ -8,18 +8,18 @@
 >
 > **Para rehacerlo, no para leerlo**: los pasos concretos, con los comandos, están en [`guia-de-replicacion.md`](guia-de-replicacion.md). Este documento cuenta qué pasó; esa guía cuenta cómo volver a hacerlo.
 >
-> Última revisión: 2026-09-06.
+> Última revisión: 2026-09-08.
 
 ## El resumen, antes del detalle
 
 | | S1 | S2 | S3 | S4 | S5 |
 |---|---|---|---|---|---|
 | **Tema** | Priming | Spec-Driven Development | OpenSpec | Verificación | Guardarraíles |
-| **Objetivo** | Dejar el entorno y el arnés listos, y probarlo con una feature real | Decidir qué construir antes de construirlo | Construir con SDD, y salir sabiendo **cuándo no usarlo** | Comprobar que lo construido hace lo que la spec dice | Contrastar las reglas declaradas contra lo que el repositorio hace |
-| **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/portar-cierres-modulo-4` |
+| **Objetivo** | Dejar el entorno y el arnés listos, y probarlo con una feature real | Decidir qué construir antes de construirlo | Construir con SDD, y salir sabiendo **cuándo no usarlo** | Comprobar que lo construido hace lo que la spec dice | Bajar a código lo que hoy es una petición escrita |
+| **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/sesion-5-guardarrailes` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#22](https://github.com/LIDR-academy/flowsync-ai4devs/pull/22) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
-| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | H-23, y nueve que volvieron |
+| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 y H-24**, y nueve que volvieron |
 
 ### Cómo cambió el proyecto, medido
 
@@ -33,17 +33,17 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 | Pruebas ejecutándose | 0 → 0 | - | **0 → 37 + 21** | **20 → 76 + 28** | **23 → 75 + 28** |
 | Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 15** |
 | Workflows de CI | - | - | - | **0 → 2** | **0 → 2** |
-| ADR | - | - | - | **0 → 4** | 2 → **6** |
+| ADR | - | - | - | **0 → 4** | 2 → **7** |
 | Migraciones | 2 → 2 | - | **2 → 5** | 4 → **6** | 4 → **6** |
 | Requisitos de spec, `tasks` | - | - | **0 → 16** | 32 → 33 | 32 → 33 |
 | Requisitos de spec, `auth` | - | - | **0 → 19** | 19 → 19 | 19 → 19 |
-| Documentos en `docs/` | 0 → 0 | **0 → 10** | 15 → 18 | **15 → 28** | **19 → 32** |
+| Documentos en `docs/` | 0 → 0 | **0 → 10** | 15 → 18 | **15 → 28** | **19 → 35** |
 
 **Los saltos de rama explican los números que no cuadran de una sesión a la siguiente.** Cada módulo arranca en `upstream/sN/start`, que es la versión del curso, no donde nosotros lo dejamos. Por eso S4 empieza con 10 rutas cuando S3 terminó con 8 -el curso añadió el detalle y la fecha por otro camino-, y por eso S5 empieza con 5 ficheros de prueba cuando S4 terminó con 15.
 
 **Ese salto es el mecanismo que produjo H-22 y los nueve defectos que volvieron.** No es una anomalía del curso: es la forma que tiene este proyecto de enseñar que un arreglo vive en una rama, no en el producto.
 
-**Diecisiete de los veintitrés hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
+**Diecisiete de los veinticuatro hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
 
 ---
 
@@ -254,7 +254,7 @@ Lo que eso significaba en concreto, y no se ve en la cuenta de rutas:
 
 ---
 
-## S5 · Controles y guardarraíles · 2026-09-02 y 03
+## S5 · Controles y guardarraíles · 2026-09-02 al 08
 
 ### Objetivo
 
@@ -273,7 +273,7 @@ Escribir la primera y dar por hecha la segunda es exactamente cómo un fichero d
 
 Y una tercera categoría, que es la que se olvida: **no se puede comprobar** no es un estado pendiente, es una propiedad de la regla. Ninguna comprobación sabe si un documento sigue siendo útil.
 
-**La sesión no se ha impartido.** Lo que hay es el prework y el trabajo de llegar con el terreno hecho.
+**El prework se hizo el 2026-09-02; la sesión, el 08.** Se cuentan separados a propósito, porque lo que la sesión enseñó solo se ve contra lo que ya había escrito antes de verla.
 
 ### Estado al empezar
 
@@ -302,9 +302,34 @@ Y lo que la comparación fichero a fichero encontró antes de portar nada: **sei
 
 **Quince comprobaciones y no las diecisiete de S4**, y la diferencia es una decisión, no una pérdida: dos contrastaban un contrato escrito a mano y esta rama lo genera, así que aquí habrían sido comprobaciones vacías. Otras dos se reapuntaron a los decoradores, que es donde sí queda algo que contrastar, y encontraron dos defectos del contrato generado.
 
-**Qué quedó.** `docs/auditoria-reglas-de-proceso.md` con la columna de estado deliberadamente sin rellenar, `.github/calibracion-revision.md`, los dos workflows, y la rama del port.
+**Qué quedó del prework.** `docs/auditoria-reglas-de-proceso.md` con la columna de estado **deliberadamente sin rellenar**, `.github/calibracion-revision.md`, los dos workflows, y la rama del port.
 
-**Hallazgos: uno nuevo, y nueve que volvieron.**
+### Y entonces la sesión, que rellenó esa columna
+
+Las tres demos, en orden, y cada una dejó algo que el prework no tenía.
+
+**Demo 1 · auditar las reglas contra el historial.** La columna de estado se rellenó con 61 commits y 26 ejecuciones de CI, contando casos. Salió **H-24**, y es el hallazgo del módulo: `verificacion.yml` lleva **16 ejecuciones en `action_required`** en el repositorio donde viven nuestros PR, sin haber ejecutado un solo paso. Corre solo en nuestro fork, sobre `push`, donde nadie del equipo lo mira.
+
+Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron donde se esperaba: **R-01 no se cumple** -45 commits directos sobre ramas `sN/*`-, **R-08 se cumple 10 de 12** cuando la intuición decía `casi nunca`, y **R-10 es vacuamente cierta** porque en este repositorio no hay hooks de git.
+
+**Demo 2 · el guardarraíl visto fallar.** Cerró la decisión que llevaba abierta desde el Módulo 4: el contrato se genera, se versiona en `docs/api/openapi.json`, y lo que corre en CI es la comprobación de que los dos coinciden ([ADR-0007](adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md)). Renombrando `profile` a `perfil`: salida **1** nombrando las rutas JSON, y **8 de 75** pruebas en rojo. Revertido, los dos a 0.
+
+**Y una avería que el verde local no podía ver.** Los dos comandos nacieron en `backend/commands/` y en Linux rompían **la build entera**: cualquier `node ace` escanea ese directorio, así que se llevaban por delante también `npm test`. En local, los dos comandos y las 75 pruebas estaban en verde. Lo dijo ejecutarlo en otra máquina.
+
+**Demo 3 · el revisor que llega solo.** `REVIEW.md` en la raíz, una pantalla, es lo que se inyecta; la calibración larga se queda con el porqué. **No se adoptó la acción oficial** del directo, y por H-24: exige que el PR viva donde está instalada la GitHub App, y los nuestros no. Queda documentada la trampa del OIDC para el día que eso cambie: sin `github_token`, el job **se salta a sí mismo en verde**.
+
+### Estado al cerrar la sesión
+
+| | Prework | Tras la sesión |
+|---|---:|---:|
+| Reglas con estado contrastado | **0 de 14** | **14 de 14** |
+| ADR | 6 | **7** |
+| Contrato versionado en un fichero | no | **sí**, con su check |
+| Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
+| CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
+| Hallazgos | H-23 | H-23, **H-24** |
+
+**Hallazgos del prework: uno nuevo, y nueve que volvieron.**
 
 **H-23** · cuatro rutas de `auth` están fuera del contrato generado. Un generador escribe fielmente lo que hay decorado y **no dice nada de lo que no lo está**: el documento sale bien formado, completo de su parte, y en silencio sobre el resto.
 
@@ -316,7 +341,11 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 - **El runner de frontend** no había cruzado, y nadie lo notó porque **lo que faltaba era la herramienta que lo mediría**.
 - **El `.gitignore`** tampoco cruzó, así que lo que no debía subirse quedó sin proteger.
 
-**Lo que enseña S5.** Leer una rama no sustituye a ejecutar sus pruebas en ella. El plan escrito antes de portar contaba seis defectos y eran nueve, y la diferencia son exactamente los que ninguna lectura podía ver.
+**Lo que enseña S5, y son dos cosas del mismo tamaño.**
+
+**Leer una rama no sustituye a ejecutar sus pruebas en ella.** El plan escrito antes de portar contaba seis defectos y eran nueve, y la diferencia son exactamente los que ninguna lectura podía ver.
+
+**Y ejecutarlas donde las escribiste no sustituye a ejecutarlas en otro sitio.** Los comandos de ace pasaban en verde en local -comandos, pruebas, lint y typecheck- y rompían dos jobs enteros en Linux. Es la misma lección una capa más arriba: un guardarraíl que solo se ha visto pasar en la máquina donde se escribió está en la misma categoría que uno que no se ha visto fallar.
 
 ---
 
