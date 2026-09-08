@@ -75,6 +75,15 @@ jobs:
         run: cp .env.example .env && node ace generate:key
         working-directory: backend
 
+      # El contrato se genera desde los decoradores, así que no puede quedarse
+      # atrás por olvido; lo que sí puede es que nadie regenere el fichero
+      # versionado y quien integre lea uno viejo. Este paso compara los dos y
+      # sale distinto de cero si difieren. No arregla nada: el arreglo es
+      # `npm run openapi:generate` en local, y el humano en el bucle.
+      - name: El contrato versionado sigue al día
+        run: npm run openapi:check
+        working-directory: backend
+
       - name: Contrastar documentación contra código
         run: node scripts/verificar-docs.mjs
 

@@ -113,7 +113,14 @@ Rutas actuales (`start/routes.ts`), todas bajo `/api/v1`:
 | GET | `/api.json` | el mismo documento, en JSON | no |
 | GET | `/api.yaml` | el mismo documento, en YAML | no |
 
-Las tres últimas las sirve `@foadonis/openapi` desde los decoradores de los controladores, y son de esta rama: el Módulo 4 nuestro había decidido lo contrario -contrato escrito a mano y contrastado- por los motivos que quedaron en un ADR. Las dos aproximaciones conviven hoy en el repositorio y **eso hay que resolverlo**, no dejarlo.
+Las tres últimas las sirve `@foadonis/openapi` desde los decoradores de los controladores. El Módulo 4 nuestro había decidido lo contrario -contrato escrito a mano y contrastado-, y las dos aproximaciones convivieron hasta el 2026-09-08. **Resuelto en [ADR-0007](docs/adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md)**: el contrato se genera, se versiona en `docs/api/openapi.json`, y lo que corre en CI es la comprobación de que los dos coinciden.
+
+```bash
+npm run openapi:generate   # escribe docs/api/openapi.json desde el código
+npm run openapi:check      # sale 1 si el fichero ya no es el contrato generado
+```
+
+`openapi:check` **no arregla nada**: nombra las rutas JSON que difieren y deja el arreglo en manos de quien hizo el cambio. Se le ha visto fallar renombrando `profile` a `perfil`, con código de salida 1.
 
 ### Validación
 
