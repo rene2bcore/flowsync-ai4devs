@@ -26,12 +26,18 @@
 | **E2-2** | …que ninguna tarea pueda existir sin título, para que nadie se encuentre una fila que no dice de qué trabajo habla | **Hecho** · M3 | Obligatorio y máximo 200 caracteres. El aviso sale junto al propio campo |
 | **E2-3** | …que una tarea nazca ya a mi nombre y en «Pendiente», para no elegir responsable ni estado cada vez | **Hecho** · M3 | Los pone el servidor. Mandarlos en la petición **no sirve**: se ignoran |
 | **E2-4** | …cambiar el estado desde la propia lista, para que mantener al día cueste un gesto y no deje de hacerse | **Hecho** · M3 | Tres botones en la fila. Cualquiera cambia el de cualquier tarea, **en cualquier dirección** |
-| **E2-5** | …abrir una tarea, para ver y tocar lo que la lista deliberadamente no muestra | **Hecho** · M3 | Pantalla propia. Es la única que informa del vencimiento |
+| **E2-5** | …abrir una tarea, para ver y tocar lo que la lista deliberadamente no muestra | **Hecho** · M3 † | Pantalla propia. Es la única que informa del vencimiento |
 | **E2-6** | …corregir el título de cualquier tarea, para que la lista siga diciendo la verdad | **Fuera de alcance** | — |
 | **E2-7** | …cambiar quién lleva una tarea, para cogerla yo sin pedir permiso ni interrumpir a nadie | **Fuera de alcance** | — |
 | **E2-10** | …borrar una tarea que ya no tiene sentido, para que la lista no se llene de ruido | **Fuera de alcance** | — |
-| **FS-118** | …poner o quitar una fecha de vencimiento al abrir una tarea y ver si se ha pasado de plazo | **Hecho** · M3 | Se guarda sola, sin confirmar. **Vencida se decide al mirar**, no se almacena |
+| **FS-118** | …poner o quitar una fecha de vencimiento al abrir una tarea y ver si se ha pasado de plazo | **Hecho** · M3 † | Se guarda sola, sin confirmar. **Vencida se decide al mirar**, no se almacena |
 | **FS-142** | …filtrar la lista por estado, para centrarme en lo pendiente sin que lo terminado me estorbe | **Hecho** · M3 | Cuatro vistas. Un estado inventado en la URL **explica que no existe** |
+
+**† Dos historias entraron por el camino del curso, no por el nuestro.** La columna dice el módulo que las construyó **en el curso**, que no siempre es el módulo en que entraron **en nuestra rama**.
+
+`upstream/s3/end` ya trae `GET /tasks/:id` y `PUT /tasks/:id/due-date`: en el camino del curso, E2-5 y FS-118 son Módulo 3. Nuestro Módulo 3 terminó con ocho rutas y un único `PATCH /tasks/:id`; el detalle de la tarea y el vencimiento llegaron **al saltar a `s4/start`**, que es la misma funcionalidad alcanzada por otro camino. Verificado comparando `backend/start/routes.ts` en las cuatro ramas.
+
+Es la misma distinción que explica los números del [recorrido](recorrido-por-modulo.md): S3 cerró con 8 rutas y S4 abrió con 10.
 
 ## Épica E3 · Actividad del equipo
 

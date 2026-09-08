@@ -639,6 +639,30 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 > **Y este hallazgo estuvo tres días sin registrar.** Se le puso número en `scripts/verificar-docs.mjs` y en `docs/capabilities/tasks/README.md` el 2026-09-02, y la entrada no existía: `hallazgos.md` no tenía ningún `H-23`. Un número citado en dos sitios que no apunta a nada es peor que no numerarlo, porque quien lo lea creerá que hay algo escrito. Registrado el 2026-09-05.
 
+## H-24 · La verificación nunca ha corrido en el repositorio donde vive el PR
+
+**Rama: todas. Severidad: alta.** Abierto. Encontrado en la Demo 1 del Módulo 5.
+
+`verificacion.yml` dispara en `pull_request` y bloquea. Pero nuestros PR son **cross-repo**: salen de `rene2bcore` y apuntan a `LIDR-academy`, así que el workflow lo ejecuta el repositorio del curso, y allí GitHub exige que un mantenedor del repositorio base apruebe cada ejecución. Ninguna se ha aprobado.
+
+**Cómo se verificó**: 2026-09-08, `gh run list` contra los dos repositorios.
+
+| Repositorio | Evento | Ejecuciones | Resultado |
+|---|---|---:|---|
+| `LIDR-academy/flowsync-ai4devs` | `pull_request` | **16** | **`action_required`. Ninguna ha ejecutado un solo paso** |
+| `rene2bcore/flowsync-ai4devs` | `push` | 10 | `success`, y los tres jobs corrieron de verdad |
+
+**Lo que sí funciona**: en nuestro fork, sobre `push`, los tres jobs -Backend, Frontend y «La documentación corresponde con el código»- se ejecutan y pasan. Comprobado abriendo una ejecución y mirando sus jobs, no el color del resumen.
+
+**Lo que no**: ese resultado **no llega al sitio donde alguien lo miraría**. En el PR no hay check, no hay rojo posible, y no bloquea nada. Es lo que la Sesión 5 llama un hallazgo que vive en un log: si no está en el PR, para el equipo no existe.
+
+**Y lo que este hallazgo rompe.** [`auditoria-reglas-de-proceso.md`](auditoria-reglas-de-proceso.md) marcaba `R-05` como **Se cumple**, con este argumento: «su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo». Las dos mitades fallan:
+
+- **«Corre en CI»** es cierto solo en nuestro fork y solo sobre `push`. Sobre el PR, dieciséis veces sin correr.
+- **«Se la ha visto fallar»** es cierto **en local**, mutando a mano. **El job de CI nunca se ha puesto en rojo**: sus diez ejecuciones son verdes. Por R-14, el job -que es otra cosa que el script- todavía no cuenta.
+
+Es H-22 otra vez, y esta vez sobre la única fila que se había atrevido a decir «se cumple», en el documento escrito para advertir contra exactamente eso.
+
 ---
 
 # Al abrir el Módulo 5

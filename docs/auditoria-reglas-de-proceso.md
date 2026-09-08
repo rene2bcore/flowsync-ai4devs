@@ -2,11 +2,13 @@
 
 > Qué reglas declara este repositorio, cuáles se cumplen, cuáles no, y cuáles **no se pueden comprobar**.
 >
-> Preparado el 2026-09-02, antes del directo del Módulo 5.
+> Preparado el 2026-09-02, antes del directo del Módulo 5. **Rellenado el 2026-09-08**, con la sesión ya vista, contra el repositorio y contando casos.
 >
-> **La columna de estado va deliberadamente sin rellenar**, salvo dos filas: es el ejercicio de la sesión, y rellenarla antes destruye lo único interesante, que es la distancia entre lo que uno cree y lo que sale.
+> Hasta el 2026-09-08 la columna de estado iba **deliberadamente sin rellenar**, salvo dos filas: era el ejercicio de la sesión, y rellenarla antes destruye lo único interesante, que es la distancia entre lo que uno cree y lo que sale. Esa distancia está ahora medida y en la sección 1 bis.
 >
-> Las dos excepciones no son descuidos y conviene que se vean. `R-05` dice **Se cumple** porque su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo. `R-13` dice **No se puede comprobar**, que no es un estado pendiente sino una propiedad de la regla: ninguna comprobación sabe si un documento sigue siendo útil.
+> **Una de las dos excepciones era falsa, y es el primer hallazgo del ejercicio.** `R-05` decía **Se cumple** porque «su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo». Corre en CI **solo en nuestro fork y solo sobre `push`**; sobre el pull request lleva **dieciséis ejecuciones sin ejecutarse**. Y el job **nunca se ha visto en rojo**: las mutaciones se hicieron en local. Es [H-24](hallazgos.md). La otra excepción, `R-13`, sigue en pie: **No se puede comprobar** no es un estado pendiente sino una propiedad de la regla.
+>
+> **Cómo se rellenó.** Con `git log`, `git rev-list` y `gh run list` sobre los **61 commits nuestros** -los que no están en ninguna rama del curso- y las **26 ejecuciones de CI** de los dos repositorios. Donde no hay rastro comprobable, se dice; no se rellena con impresión.
 
 ## Por qué existe este documento
 
@@ -35,39 +37,95 @@ Se dice porque una intuición prestada y una propia se contrastan igual pero **n
 
 Las tres salen de `~/.claude/CLAUDE.md` y `~/OPINIONS.md`. **No están en el README de ningún proyecto suyo**, y eso ya es un hallazgo: son reglas de proceso reales, aplicadas a todos sus repositorios, escritas una sola vez en un fichero global que ninguno de esos repositorios declara ni comprueba. Una petición, heredada en silencio, verificada en ninguna parte.
 
+## 1 bis · La distancia entre la intuición y la evidencia
+
+Esto es lo que el ejercicio existía para producir, y por eso la columna estuvo seis días vacía.
+
+| Regla | Intuición, 2026-09-02 | Evidencia, 2026-09-08 | Distancia |
+|---|---|---|---|
+| Un bug deja una prueba detrás | `casi nunca` | **10 de 12** commits `fix:` traen prueba | **Se falló entera, y por el lado optimista al revés**: se creía peor de lo que era |
+| Al índice se va por nombre | `casi siempre` | **61 de 61**, sin una sola excepción | Acertada, y corta: era `siempre` |
+| Los hooks no se saltan | `siempre` | Cierta, pero **no hay hooks que saltar** | Acertada por el motivo equivocado |
+
+**Y el patrón que sale es exactamente el que predice el modo de fallo.**
+
+La intuición acertó en las dos reglas cuyo incumplimiento **deja rastro o hace ruido** -el índice queda escrito en el historial para siempre, y saltarse un hook hay que teclearlo- y falló entera en la única de las tres con **modo de fallo silencioso**. No falló por pesimismo genérico: falló porque de una regla que nadie comprueba no se tiene información, solo sensación.
+
+Ahí está el argumento del módulo en una línea: **sobre lo que falla en silencio, la intuición no es una estimación mala, es que no es una estimación.**
+
+Un matiz que conviene no perder, porque cambia lo que enseña: **las tres palabras las propuso Claude** a partir de los ficheros de renelo, y renelo las aceptó. Así que lo que se ha medido no es la intuición de una persona sobre su propio proceso, sino la de un modelo leyendo sus reglas. Que fallara justo donde no hay rastro es coherente: no tenía nada que leer.
+
 ## 2 · Todas las reglas del repositorio
 
 Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron de los módulos anteriores, y siete de calidad del cambio -seis traídas de los proyectos de renelo para poder contrastarlas, y una que sale de la cicatriz de este repositorio.
 
 ### Ciclo de trabajo
 
-| # | Regla | Modo de fallo | Qué la ejecutaría | Estado |
+| # | Regla | Modo de fallo | Qué la ejecutaría | Estado, con evidencia |
 |---|---|---|---|---|
-| R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | Un hook de `pre-commit` que mire la rama | *pendiente* |
-| R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | *pendiente* |
-| R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | *pendiente* |
-| R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | *pendiente* |
-| R-05 | Un cambio en rutas, controladores o validadores cierra con `openapi.yaml` al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple** |
-| R-06 | Verificar por código de salida, nunca por la última línea impresa | **Silencioso** | Nada lo comprueba. Es una forma de mirar | *pendiente* |
-| R-07 | `hallazgos.md` se arrastra entre ramas y se comprueba entrada a entrada | **Silencioso** | Parcialmente ejecutado: la comprobación exige la sección «Lo que se arrastra» con su tabla | *pendiente* |
+| R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | Un hook de `pre-commit` que mire la rama | **No se cumple.** **45 commits nuestros** van directos sobre ramas `sN/*`: 12 en `s3/start` y 33 en `s4/start` |
+| R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | **Se cumple.** **5 unidades de trabajo, 5 PR**: #12, #14, #15, #21, #22. Ninguna se quedó sin abrir |
+| R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple a mano; no se cumple automáticamente.** **7 revisiones** ejecutadas en local, todas con hallazgos reales. El job **no ha revisado nunca**: sin credencial, se omite en verde |
+| R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **No se puede comprobar.** No hay repositorio donde mirarlo. Es la misma categoría que R-13, en pequeño |
+| R-05 | Un cambio en rutas, controladores o validadores cierra con el contrato al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple en local; no en el PR.** El script muerde -15 comprobaciones, vistas fallar mutando-. El **job** lleva 16 ejecuciones en `action_required` sobre el PR y **0 rojos** en las 10 del fork. Es [H-24](hallazgos.md) |
+| R-06 | Verificar por código de salida, nunca por la última línea impresa | **Silencioso** | Nada lo comprueba. Es una forma de mirar | **No se puede comprobar desde el repositorio.** Ningún artefacto registra cómo se miró un resultado. Lo único que deja rastro son los mensajes de commit que citan la salida, y eso mide lo que se escribe, no lo que se hizo |
+| R-07 | `hallazgos.md` se arrastra entre ramas y se comprueba entrada a entrada | **Silencioso** | Parcialmente ejecutado: la comprobación exige la sección «Lo que se arrastra» con su tabla | **Se incumplió dos veces y luego se cumplió.** En `s3/start → s4/start` no cruzó: `hallazgos.md` no existía en la rama y tres arreglos se perdieron. En `s4/start → s5/start` se hizo fichero a fichero y **encontró nueve defectos vivos**. La primera tabla que aplicaba la regla la incumplió el mismo día: [H-22](hallazgos.md) |
 
 ### Calidad del cambio
 
-| # | Regla | Modo de fallo | Qué la ejecutaría | Estado |
+| # | Regla | Modo de fallo | Qué la ejecutaría | Estado, con evidencia |
 |---|---|---|---|---|
-| R-08 | Un bug no se cierra sin reproducirlo en E2E, y deja una prueba detrás | **Silencioso** | Nada hoy | *pendiente* |
-| R-09 | Al índice se va por nombre | Silencioso, auditable | El historial ya lo registra; falta quien lo lea | *pendiente* |
-| R-10 | Los hooks no se saltan | Ruidoso | El propio hook, más el historial | *pendiente* |
-| R-11 | Todo atajo se escribe como deuda técnica | **Silencioso**, y el que más decae | Nada hoy | *pendiente* |
-| R-12 | Un lint, test fallando o flaky se arreglan aunque no los hayas causado | **Silencioso** | CI lo ejecuta para lo que corre en CI, y nada para lo demás | *pendiente* |
+| R-08 | Un bug no se cierra sin reproducirlo en E2E, y deja una prueba detrás | **Silencioso** | Nada hoy | **Se cumple casi siempre: 10 de 12.** De los commits `fix:`, diez tocan un fichero de prueba. Los dos que no: uno arregla una comprobación del verificador -su prueba es una mutación, que no es un fichero- y el otro es del Módulo 1, cuando **no había ni una prueba en el proyecto** |
+| R-09 | Al índice se va por nombre | Silencioso, auditable | El historial ya lo registra; falta quien lo lea | **Se cumple.** En 61 commits, **cero ficheros que no debían entrar**: ni `docs/plans/`, ni `docs/propuestas-rene-lopez.md`, ni `backend/.env`, ni la base de desarrollo. Los dos `chore:` de «fuera del repositorio» tocan **solo `.gitignore`**: nunca hubo que sacar nada del índice |
+| R-10 | Los hooks no se saltan | Ruidoso | El propio hook, más el historial | **Vacuamente cierta: en este repositorio no hay hooks de git.** `.git/hooks/` solo tiene los ejemplos. `--no-verify` aquí no se salta nada, así que cumplirla no cuesta nada y no demuestra nada |
+| R-11 | Todo atajo se escribe como deuda técnica | **Silencioso**, y el que más decae | Nada hoy | **Se cumple, y con formato propio.** Cada atajo tiene su sitio declarado: `hallazgos.md` para los defectos, la sección «Lo que no se ha visto» de `.github/calibracion-revision.md` para el revisor, y H-18 para lo que se archivó sin ejecutar. Nada de esto lo obliga una herramienta |
+| R-12 | Un lint, test fallando o flaky se arreglan aunque no los hayas causado | **Silencioso** | CI lo ejecuta para lo que corre en CI, y nada para lo demás | **Se cumple, y por encima de lo que pide.** No solo se arreglaron rojos ajenos: se arreglaron **nueve defectos que ninguna herramienta señalaba** porque la suite estaba en verde. La parte no comprobable es la contraria: no hay forma de saber cuántos rojos se ignoraron antes de que existiera CI |
 | R-13 | La documentación desactualizada es peor que no tenerla | **No comprobable** | Nada puede. Ver abajo | **No se puede comprobar** |
-| R-14 | Una comprobación cuenta cuando se la ha visto fallar | **Peor que silencioso**: da una garantía que no existe | Nada automático. Se ejecuta mutando a mano y mirando el rojo | *pendiente* |
+| R-14 | Una comprobación cuenta cuando se la ha visto fallar | **Peor que silencioso**: da una garantía que no existe | Nada automático. Se ejecuta mutando a mano y mirando el rojo | **No se cumplía; ahora se cumple para el script y no para el job.** Siete revisiones seguidas encontraron comprobaciones en verde sobre mutaciones reales. Las 15 del verificador ya se han visto fallar. **Los dos workflows, no**: 10 ejecuciones, 10 verdes, cero rojos provocados |
+
+## 2 bis · Qué se hace con cada una
+
+El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **¿puede pasar meses sin que nadie note el incumplimiento?** y, si sí, **¿es computable?**
+
+| # | ¿Meses sin notarse? | ¿Computable? | Qué se hace |
+|---|---|---|---|
+| R-01 · Rama por unidad de trabajo | **Sí**: 45 commits y nadie lo notó | **Sí, previniendo** | **Bajar**: hook de `pre-commit` que rechace `main` y `sN/*` |
+| R-02 · `/commit` y `gh pr create` | No: se nota que no hay PR | — | **Conservar arriba**. 5 de 5 |
+| R-03 · Adversarial sobre el PR | **Sí** | Su **ejecución** sí; su criterio no | **Bajar la ejecución** (el job existe y no funciona), **conversación** el criterio |
+| R-04 · No repetir el resumen en el chat | No | No relevante | **Borrar**. No protege nada y alarga el contexto |
+| R-05 · Contrato al día y verificador ejecutado | **Sí** | **Sí** | **Ya bajada, y rota**: [H-24](hallazgos.md). Arreglarla es el trabajo, no reclasificarla |
+| R-06 · Verificar por código de salida | **Sí** | No: ningún artefacto registra cómo se miró | **Conversación** |
+| R-07 · Arrastre de hallazgos entre ramas | **Sí**: costó nueve defectos | La **tabla** sí; el contraste entrada a entrada no | **Bajada a medias** ya. El resto, **conversación** |
+| R-08 · Un bug deja una prueba detrás | **Sí** | **Sí**: un commit `fix:` que no toque una prueba es detectable | **Bajar**. Es el candidato más limpio que queda |
+| R-09 · Al índice se va por nombre | Sí en teoría | Del pasado no; `.gitignore` cubre lo que importa | **Conservar arriba**. 61 de 61 |
+| R-10 · Los hooks no se saltan | — | — | **Borrar, o darle un objeto.** Hoy vigila algo que no existe |
+| R-11 · Todo atajo se escribe como deuda | **Sí**, y es el que más decae | No | **Conversación** |
+| R-12 · Lint, test fallando o flaky se arreglan | **Sí** | **Sí**: es CI | **Ya bajada**, con la misma avería que R-05 |
+| R-13 · La doc desactualizada es peor que no tenerla | — | **No puede serlo** | Tercera categoría. Ver sección 3 |
+| R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajar**. La de más valor de las tres |
+
+**Cuentas**: 4 a bajar, 2 a conservar arriba, 4 a conversación, 2 a borrar, 2 ya bajadas y averiadas.
+
+### Dónde nuestra clasificación se separa de la del directo
+
+**En la sesión, la regla de la rama fue a «conversación» por no ser computable: git no guarda la rama de autoría.** Eso es cierto **para auditar el pasado** y falso **para prevenir el futuro**. Un `pre-commit` que lea `git rev-parse --abbrev-ref HEAD` y rechace `main` y `sN/*` es tres líneas y determinista.
+
+Son dos preguntas distintas y conviene no fundirlas:
+
+| | Pregunta | R-01 |
+|---|---|---|
+| **Auditar** | ¿Se cumplió? | **No computable.** Un fast-forward con la rama borrada deja el mismo rastro que hacerlo bien |
+| **Prevenir** | ¿Se puede impedir que se incumpla? | **Computable.** El hook mira la rama actual, que sí existe en el momento de commitear |
+
+Nuestro caso es además **más fuerte que el del directo**: allí el veredicto fue «indicio fuerte, no demostrable», porque las ramas de trabajo podrían haber existido y haberse borrado. Aquí las ramas siguen existiendo y **los 45 commits están sobre `s3/start` y `s4/start`, no sobre ninguna rama de trabajo**. No es indicio, es la cuenta.
+
+**Y R-14 no tiene equivalente en el directo**, porque no viene del curso: sale de esta cicatriz. Es la única regla cuyo incumplimiento produce **confianza falsa** en vez de trabajo sin hacer, y resulta ser computable. Mutar a propósito y exigir rojo es un script.
 
 ## 3 · La tercera categoría, que es la que se olvida
 
 R-13 no está pendiente de comprobar: **no se puede comprobar**, y decirlo es más honesto que dejarla como aspiración.
 
-Ninguna comprobación sabe si un documento sigue siendo útil. Sabe si sigue **coincidiendo con el código**, que es otra cosa, y es exactamente lo que hace `scripts/verificar-docs.mjs` con sus diecisiete comprobaciones -las del verificador, que no tienen que ver con las catorce reglas de la tabla de arriba. Un documento puede coincidir con el código al milímetro y no servirle a nadie.
+Ninguna comprobación sabe si un documento sigue siendo útil. Sabe si sigue **coincidiendo con el código**, que es otra cosa, y es exactamente lo que hace `scripts/verificar-docs.mjs` con sus quince comprobaciones en esta rama -las del verificador, que no tienen que ver con las catorce reglas de la tabla de arriba. Un documento puede coincidir con el código al milímetro y no servirle a nadie.
 
 Lo mismo vale para R-04, en pequeño: «no repitas el resumen en el chat» es una regla sobre lo que se dice, y no hay repositorio donde mirarlo.
 
@@ -91,7 +149,7 @@ Su modo de fallo es el peor de los catorce. Las demás, cuando fallan, dejan el 
 
 El 2026-09-02 se le puso un job de CI al lado: `.github/workflows/revision-adversarial.yml`, con su calibración en `.github/calibracion-revision.md`.
 
-**Y su estado sigue siendo `pendiente`, no `se cumple`.** Por R-14: está escrito y no se le ha visto funcionar. Faltan la credencial -`CLAUDE_CODE_OAUTH_TOKEN`, que sale de `claude setup-token` y va contra la suscripción- y una prueba con un defecto plantado que confirme que el informe lo nombra.
+**Y su estado, ya contrastado, es «se cumple a mano y no automáticamente».** Por R-14: el job está escrito y **no se le ha visto funcionar ni una vez**. Faltan la credencial -`CLAUDE_CODE_OAUTH_TOKEN`, que sale de `claude setup-token` y va contra la suscripción- y una prueba con un defecto plantado que confirme que el informe lo nombra. Lo que sí se cumple son las **siete revisiones ejecutadas en local**, todas con hallazgos reales que acabaron en código.
 
 Marcarlo como resuelto porque existe el fichero sería el error exacto que este documento describe, cometido en el documento que lo describe. Ya pasó una vez con H-22.
 
@@ -100,9 +158,9 @@ Dos decisiones del job que conviene tener presentes al auditarlo:
 - **No bloquea.** Lo determinista bloquea; el revisor informa. Un revisor no determinista que tumba la build se desactiva la primera vez que se equivoca con prisa, y entonces no queda ni revisor ni build.
 - **No dispara solo con `pull_request`.** Nuestros PR son cross-repo, así que ese evento lo recibe el repositorio del curso y no este, y además los PR desde un fork no reciben secretos. Un job con ese disparador solo habría quedado presente e inerte, que es la peor forma de guardarraíl.
 
-## 5 · Cómo se rellena la columna de estado
+## 5 · Cómo se rellenó la columna de estado
 
-Durante el directo, y con evidencia, no de memoria. Para cada regla:
+El 2026-09-08, con evidencia y no de memoria. Para cada regla:
 
 1. **Buscar en el repositorio lo que la regla predice.** Si dice que cada bug deja una prueba, los commits de arreglo tienen que traer un fichero de pruebas tocado.
 2. **Contar los casos, no dar una impresión.** «Casi siempre» sin número es la respuesta que este ejercicio existe para desmontar.
