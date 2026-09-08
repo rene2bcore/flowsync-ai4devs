@@ -3,6 +3,10 @@
 > Qué se considera grave, cuántas sugerencias menores caben, y por qué esta revisión **no bloquea**.
 >
 > Un guardarraíl no muere fallando. Muere acertando sobre cosas que a nadie le importaban, hasta que nadie lo lee. Este fichero existe para retrasar ese momento.
+>
+> **Desde el 2026-09-08 este documento no se inyecta al revisor.** Lo que se le pasa es [`REVIEW.md`](../REVIEW.md), en la raíz, que cabe en una pantalla y dice **qué** hacer. Aquí queda el **porqué**: de dónde sale el gasto, por qué no bloquea, y qué no se ha visto funcionar. Es para quien mantiene el job, no para el modelo.
+>
+> Separarlos es la lección de la Demo 3 del Módulo 5: un fichero largo diluye las reglas que importan. Ciento veintiocho líneas de razonamiento delante de siete categorías hacen que el modelo lea razonamiento. Si las dos listas de categorías dejan de coincidir, **manda `REVIEW.md`**, que es la que se ejecuta.
 
 ## Por qué no bloquea
 

@@ -148,7 +148,17 @@ jobs:
           # comparte el texto, no la caja. Las herramientas y el modelo de CI se
           # deciden abajo, y a propósito.
           instrucciones=$(sed '1{/^---$/!q;};1,/^---$/d' .claude/agents/adversarial-reviewer.md)
-          calibracion=$(cat .github/calibracion-revision.md)
+
+          # La calibración que se **inyecta** es `REVIEW.md`, en la raíz, y cabe
+          # en una pantalla. `.github/calibracion-revision.md` sigue existiendo
+          # y no se inyecta: ahí vive el *porqué* de cada decisión -por qué no
+          # bloquea, de dónde sale el gasto, qué no se ha visto funcionar-, que
+          # es para quien mantiene el job, no para el revisor.
+          #
+          # Separarlos es la lección de la Sesión 5: un fichero largo diluye las
+          # reglas que importan. Ciento veintiocho líneas de razonamiento delante
+          # de siete categorías hacen que el modelo lea razonamiento.
+          calibracion=$(cat REVIEW.md)
 
           # El diff se calcula AQUÍ y se le entrega ya escrito. El revisor no
           # necesita ejecutar nada para verlo, y por eso puede correr sin Bash.
