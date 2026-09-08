@@ -663,6 +663,19 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 Es H-22 otra vez, y esta vez sobre la única fila que se había atrevido a decir «se cumple», en el documento escrito para advertir contra exactamente eso.
 
+**Mitigación, comprobada el 2026-09-08.** Abrir el cambio también como **pull request dentro del fork** (`rene2bcore#1`, `feat/sesion-5-guardarrailes` → `s5/start`). Ahí el evento `pull_request` sí dispara, con secretos, y los checks aparecen en el PR.
+
+Se comprobó en las dos direcciones, que es lo que la hace contar:
+
+| | |
+|---|---|
+| Primera ejecución sobre `pull_request` | **`failure`.** Dos jobs en rojo por los comandos de ace, que en Linux rompían la build |
+| Tras el arreglo | **`success`**, con los tres jobs ejecutados |
+
+Es decir: el evento no solo corre, **muerde**. Y encontró en su primera ejecución un defecto que el verde en local no podía ver.
+
+**Lo que la mitigación no resuelve**: el PR que el curso mira sigue siendo el de `LIDR-academy`, y ahí los checks siguen sin correr. Son dos PR para el mismo cambio, uno donde se ejecuta y otro donde se lee. Cerrarlo del todo depende de que un mantenedor del repositorio base apruebe las ejecuciones, y eso no está en nuestra mano.
+
 ---
 
 # Al abrir el Módulo 5

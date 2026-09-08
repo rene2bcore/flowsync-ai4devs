@@ -17,7 +17,7 @@
 | **Tema** | Priming | Spec-Driven Development | OpenSpec | Verificación | Guardarraíles |
 | **Objetivo** | Dejar el entorno y el arnés listos, y probarlo con una feature real | Decidir qué construir antes de construirlo | Construir con SDD, y salir sabiendo **cuándo no usarlo** | Comprobar que lo construido hace lo que la spec dice | Bajar a código lo que hoy es una petición escrita |
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/sesion-5-guardarrailes` |
-| **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#22](https://github.com/LIDR-academy/flowsync-ai4devs/pull/22) |
+| **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#26](https://github.com/LIDR-academy/flowsync-ai4devs/pull/26) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
 | **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 y H-24**, y nueve que volvieron |
 
