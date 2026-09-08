@@ -55,6 +55,18 @@ Por [R-14](../../CLAUDE.md), y en este orden:
 
 El código de salida se leyó del proceso, no de la última línea impresa: la primera lectura dio `0` porque estaba mirando el `$?` de un `tail` en la tubería, que es exactamente el error que [R-06](auditoria-reglas-de-proceso.md) nombra.
 
+## Y una avería que solo se vio en CI
+
+Los dos comandos nacieron como **comandos de ace** en `backend/commands/`, que es donde el framework los espera. En local funcionaban: los dos verdes, las 75 pruebas verdes, lint y typecheck verdes.
+
+**En Linux rompían la build entera.** El escáner de `commands/` fallaba con `Invalid command exported from "openapi_check.js" file. Invalid URL`, y como **cualquier** invocación de `node ace` escanea ese directorio, se llevaba por delante también `node ace test`. Dos jobs en rojo por dos ficheros que en Windows no se quejan.
+
+Se sacaron a `bin/openapi.ts` con su entrypoint `openapi.js`, el mismo patrón que `ace.js`, y `commands/` volvió a no existir.
+
+Al hacerlo apareció un segundo modo de fallo del mismo tipo: sin la fase `app.start()`, el documento salía con **`paths` completos y `components.schemas` vacío**. Bien formado, y a medias. Es el mismo error que `router.commit()`, y las dos veces la señal fue el check nombrando qué faltaba.
+
+**Lo que esto enseña, y por eso está en el ADR y no solo en un commit**: el verde en local no dijo nada. Lo que lo dijo fue ejecutarlo en otra máquina. Un guardarraíl que solo se ha visto pasar en el sitio donde se escribió está en la misma categoría que uno que no se ha visto fallar.
+
 ## Alternativas consideradas
 
 **Dejar las dos aproximaciones conviviendo.** Es lo que había, y es lo peor: dos contratos que pueden contradecirse y ninguna regla que diga cuál manda.

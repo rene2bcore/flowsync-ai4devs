@@ -16,8 +16,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "openapi:generate": "node ace openapi:generate",
-    "openapi:check": "node ace openapi:check"
+    "openapi:generate": "node openapi.js generate",
+    "openapi:check": "node openapi.js check"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
