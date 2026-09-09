@@ -38,7 +38,9 @@ gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo rene2bcore/flowsync-ai4devs
 
 Va en el **fork**, no en el repositorio del curso, y no hace falta GitHub App porque no usamos la acción oficial.
 
-Mientras no existía, el job **se omitía en verde** y lo decía en el resumen. La asimetría es deliberada y sigue en pie: sin configurar es un estado esperado; configurado y roto sale **rojo**, porque entonces alguien cuenta con una revisión que no se ejecuta. Esa segunda mitad **no se ha provocado todavía**.
+Mientras no existía, el job **se omitía en verde** y lo decía en el resumen. La asimetría es deliberada: sin configurar es un estado esperado; configurado y roto sale **rojo**, porque entonces alguien cuenta con una revisión que no se ejecuta.
+
+**Las dos mitades están comprobadas.** La segunda se provocó sola el mismo día: con la credencial puesta, [H-28](hallazgos.md) puso el job en rojo tres veces seguidas -lista de negación inválida, turnos agotados- y cada rojo llevaba su diagnóstico. Funcionó como se diseñó.
 
 ## Por qué no la acción oficial
 
@@ -71,7 +73,7 @@ La acción oficial cambia el token OIDC del workflow por uno efímero de la GitH
 
 **Verde sin haber revisado nada** es exactamente el modo de fallo que [R-14](auditoria-reglas-de-proceso.md) describe: una comprobación que da una garantía que no existe. El fix es una línea, `github_token: ${{ secrets.GITHUB_TOKEN }}`, y el motivo de que exista la validación es bueno: sin ella, cualquiera podría meter un workflow con permisos elevados y ejecutarlo antes de que nadie lo revise.
 
-**Y nuestro job tuvo esa misma forma de fallo hasta el 2026-09-09**: diez ejecuciones verdes y **ninguna había revisado nada**, por falta de credencial. La diferencia era que la nuestra lo decía en el resumen, lo que la hacía menos grave, no correcta. Con el secreto puesto, la primera ejecución real encontró dos hallazgos graves.
+**Y nuestro job tuvo esa misma forma de fallo hasta el 2026-09-09**, por dos motivos apilados: primero la falta de credencial, y detrás [H-27](hallazgos.md), una consulta que nunca encontraba el PR. Diez ejecuciones verdes y **ninguna había revisado nada**. La diferencia era que la nuestra lo decía en el resumen, lo que la hacía menos grave, no correcta.
 
 ## Visto funcionar, el 2026-09-09
 
@@ -96,6 +98,6 @@ Precios oficiales en [claude.com/pricing](https://claude.com/pricing). No se cop
 
 **Tres revisores en cascada** en vez de uno: el adversarial encuentra, un segundo descarta falsos positivos, y un tercero prioriza qué aplica solo y qué necesita criterio humano. El argumento de fondo es que el cuello de botella ya no es escribir código sino verificarlo.
 
-El primero ya se ha visto morder, así que el argumento que lo bloqueaba ha caído. Sigue sin implementarse por otro, más débil pero honesto: **lleva un hallazgo real de un caso, y era plantado**. La métrica de la calibración es cuántos acaban en código; con una muestra de uno no hay nada que priorizar ni falsos positivos que descartar.
+El primero ya se ha visto morder, así que el argumento que lo bloqueaba ha caído. Sigue sin implementarse por otro, más débil pero honesto: **lleva dos hallazgos en dos ejecuciones, y con eso no hay nada que priorizar ni falsos positivos que descartar**. Un verificador de falsos positivos necesita falsos positivos que ver.
 
 Cuando el revisor lleve unas cuantas revisiones de cambios de verdad, esa cascada será la siguiente pieza.

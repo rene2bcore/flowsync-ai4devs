@@ -359,13 +359,20 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 
 ## Lo que queda abierto hoy
 
-| | Qué | Por qué |
-|---|---|---|
-| - | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
-| - | El revisor adversarial en CI | Escrito y sin credencial. Hasta que se le vea encontrar algo, **no cuenta** |
-| - | **Dos aproximaciones al contrato conviven** | La generada de `s5/start` y ADR-0004, que la descarta. Es material de la sesión |
+Actualizado el 2026-09-09, después de cerrar la sesión.
 
-Ninguno es deuda olvidada: los cuatro están declarados, y la diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender.
+| | Qué | Estado |
+|---|---|---|
+| **H-03** | El cierre de sesión no envuelve en `{ data }` | Abierto **a propósito** desde el Módulo 2, y ahora **documentado como es** en el contrato |
+| **H-26** | `/api.json` acumula un parámetro duplicado en cada petición | Abierto. Es de la librería y solo afecta a desarrollo. Lo hace soportable que el contrato sea el fichero, no la URL |
+| **H-30** | El PR apila dos módulos y son 10.049 líneas | Abierto, y es **de proceso**: la unidad de trabajo. Mitigado excluyendo lo que `REVIEW.md` ya no revisa |
+| **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las 35 ejecuciones pendientes no está en nuestra mano |
+| — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
+| — | **R-01 sigue sin bajar a un hook** | Está clasificada y contada -45 incumplimientos-, no arreglada. Tres líneas de `pre-commit` |
+
+**Y dos que se cerraron aquí y conviene no dar por eternas**: el contrato tenía dos aproximaciones conviviendo y ahora tiene una, con su ADR; y el revisor adversarial pasó de «escrito y nunca visto morder» a haber encontrado un defecto real sin que nadie se lo plantara.
+
+Ninguno de los seis es deuda olvidada. **La diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender**, y la prueba de que sigue funcionando es que cuatro de los seis se descubrieron el último día, verificando que lo anterior funcionaba.
 
 ---
 

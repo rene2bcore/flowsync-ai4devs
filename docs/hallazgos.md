@@ -860,6 +860,8 @@ Así que **no se sube el tope**. Lo que hay es un PR que apila el port del Módu
 
 **Y se añade un aviso** en el resumen del job por encima de 6.000 líneas, para que la próxima vez se sepa antes de gastar cuatro minutos y una cuota.
 
+**Resultado, comprobado**: con 8.541 líneas el revisor **completó** y devolvió su informe -«Ninguno / Ninguno», que es la respuesta correcta cuando no hay nada sobre el umbral-. La mitigación basta para este tamaño; no se sabe dónde está el límite real y el aviso existe para no volver a encontrarlo por sorpresa.
+
 **Lo que queda por decidir, y es de proceso**: la unidad de trabajo. Un PR por módulo produce diffs de este tamaño cuando la base no avanza. Las opciones son revisar por commit, revisar solo lo que cambia desde la última revisión, o partir la unidad. Ninguna es gratis y esto no es el sitio para elegir: va a la conversación que la auditoría ya declara pendiente para R-01 y R-03.
 
 ---

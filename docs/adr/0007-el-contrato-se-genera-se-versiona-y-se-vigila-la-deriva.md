@@ -81,4 +81,6 @@ Al tocar rutas, controladores o transformers hay que **acordarse de `npm run ope
 
 **[H-23](../hallazgos.md) quedó cerrado el 2026-09-09**, y versionar el contrato es lo que lo hizo barato: con las cuatro rutas de `auth` visibles en un fichero con `responses: {}`, decorarlas dejó de ser una tarea abstracta. Las nueve rutas declaran hoy sus respuestas y su 500.
 
-Y uno mayor, que este ADR no puede resolver: **[H-24](../hallazgos.md)**. El job existe y en el pull request no ha corrido nunca. Un guardarraíl que no llega al sitio donde se mira es la mitad de un guardarraíl.
+Queda abierto **[H-26](../hallazgos.md)**, y esta decisión es lo que lo hace soportable: el documento que sirve `/api.json` acumula un parámetro duplicado en cada petición, así que **la URL no es el contrato**. El fichero versionado sí, y es el que se integra y el que se revisa. La decisión se tomó para hacer la deriva visible en un diff; que también protegiera de esto no se previó.
+
+Y **[H-24](../hallazgos.md)**, que este ADR no puede resolver: en el pull request del curso el job sigue sin correr. Mitigado abriendo el cambio también como PR dentro del fork, donde sí corre.
