@@ -229,6 +229,14 @@ jobs:
             --max-turns 40 \
             > /tmp/informe.md 2> /tmp/error.txt
           then
+            # El diagnostico va al log **y** al resumen. Estuvo solo en el
+            # resumen hasta el 2026-09-09, y eso lo hacia ilegible desde
+            # `gh run view --log-failed`: el unico sitio donde estaba exigia
+            # sesion en el navegador. Un fallo que cuesta leer se investiga
+            # menos, que es media razon para que no se arregle.
+            echo "--- el revisor fallo, esto es lo que dijo ---" >&2
+            tail -c 4000 /tmp/error.txt >&2 || true
+
             {
               echo "## La revisión adversarial no pudo ejecutarse"
               echo
