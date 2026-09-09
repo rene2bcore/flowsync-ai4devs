@@ -24,7 +24,7 @@ Sin nada grave y sin nada menor que llegue al umbral, el informe correcto es **u
 
 ## Dónde no reportar
 
-- **Lo que ya vigila una comprobación**: `eslint`, `oxlint`, `prettier`, `tsc`, las 75 pruebas de backend, las 28 de frontend, `openapi:check` y las 17 comprobaciones de `verificar-docs.mjs`. Si un script ya lo muerde, un modelo mirándolo es gasto.
+- **Lo que ya vigila una comprobación**: `eslint`, `oxlint`, `prettier`, `tsc`, las 81 pruebas de backend, las 28 de frontend, `openapi:check` y las 17 comprobaciones de `verificar-docs.mjs`. Si un script ya lo muerde, un modelo mirándolo es gasto.
 - **Ficheros generados**: `backend/.adonisjs/`, `backend/database/schema.ts`, `node_modules`.
   **`docs/api/openapi.json` no está en esta lista**, aunque se genere: es el contrato, y lo que afirma sobre autorización y respuestas **sí se revisa**. Estuvo aquí un día y en ese día declaró públicas dos rutas protegidas ([H-25](docs/hallazgos.md)).
 - **Estilo, nombres, orden, «esto podría extraerse a una función»**, y rendimiento sin un número que lo respalde.

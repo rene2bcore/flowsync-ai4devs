@@ -61,7 +61,7 @@ Qué encontró cada módulo. La atribución sale del commit que introdujo cada e
 
 ## H-01 · Los tests comparten base de datos con desarrollo
 
-**Severidad: alta.** Es el que más va a doler en el Módulo 3.
+**Severidad: alta.** **Cerrado** en el Módulo 3 con [ADR-0003](adr/0003-aislamiento-de-la-base-de-datos-en-pruebas.md), **reabierto** al saltar a `s5/start` y **cerrado otra vez** en el port del 2026-09-02. `config/database.ts` elige el fichero según el entorno y `bin/test.ts` fuerza `NODE_ENV=test`. Lo vigila `tests/functional/aislamiento.spec.ts`, que es la prueba que lo detectó al fallar.
 
 `backend/config/database.ts` define una única conexión SQLite apuntando a `app.tmpPath('db.sqlite3')`, **sin ningún override por entorno**. Y `backend/.env.test` contiene exactamente una línea:
 
@@ -106,7 +106,7 @@ Idéntica. La base de test vive aparte, en `tmp/db-test.sqlite3`, y no está ver
 
 ## H-02 · Cero pruebas automatizadas en todo el proyecto
 
-**Severidad: alta.**
+**Severidad: alta.** **Cerrado.** De cero pruebas a **81 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
 
 | | Estado |
 |---|---|
@@ -229,7 +229,7 @@ POST /api/v1/auth/signup  {"email":"malformado","password":"123"}
 
 ## H-05 · La traducción de errores depende de los nombres de regla del backend
 
-**Severidad: media.** Parcialmente vigilado.
+**Severidad: media.** **Cerrado el 2026-09-09.** Estuvo dieciséis días como «parcialmente vigilado», y esa nota era generosa: las 28 pruebas del frontend cubren `lib/api.ts` con payloads fabricados a mano, así que seguían en verde aunque el backend dejara de emitir un nombre de regla. Comprobaban la traducción, no el acoplamiento. Lo ata ahora `tests/functional/nombres_de_regla.spec.ts`, que pide a la API de verdad los ocho identificadores que el `switch` traduce -`database.unique`, `sameAs`, `email`, `required`, `minLength`, `maxLength`, `date` y `enum`- y falla nombrando el que falte. Visto fallar quitando `.maxLength(200)` del validador de tareas: «el frontend traduce reglas que la API ya no emite: maxLength».
 
 > **Corrección (2026-08-26).** Esta entrada afirmaba que `api.ts` traducía mediante un diccionario indexado por el **texto literal** del mensaje, con el ejemplo `'The email has already been taken': ...`. Ese código no existe ni ha existido:
 >
@@ -274,24 +274,32 @@ Queda anotado para revisarse antes de cualquier despliegue real.
 
 ## H-07 · El hook de formateo depende de `jq`, que no está instalado
 
-**Severidad: baja.** Abierto en `s2/start`.
+**Severidad: media.** **Cerrado el 2026-09-09**, dos semanas y media después de registrarse.
 
-`.claude/settings.json` define un hook `PostToolUse` que formatea con Prettier los ficheros de `frontend/` que Claude edite. Su primera instrucción es `jq -r ...`.
+El hook `PostToolUse` de `.claude/settings.json` formateaba con Prettier cada fichero de `frontend/` que Claude tocara. Extraía la ruta del payload con `jq`, **y `jq` no está en esta máquina**. El comando terminaba en `2>/dev/null || true`, así que el fallo no dejaba ni una línea.
 
-**Cómo se verificó**: `command -v jq` no devuelve nada en esta máquina. El hook sigue conteniendo `jq -r` en la rama actual.
+**Resultado: el hook no ha formateado nunca nada, y siempre salió bien.**
 
-**Consecuencia**: el hook **no formatea nada**, y como el comando termina en `|| true`, tampoco avisa. Falla en silencio, que es peor que fallar.
+**Cómo se verificó**, el 2026-09-09, escribiendo a propósito un fichero mal formateado en `frontend/src/`:
 
-Prettier sí está instalado en el frontend, así que el único eslabón que falta es `jq`.
+```
+export const sinFormato = {    a:1,
+      b:   2 }
+```
 
-**Dos salidas**:
+Con el hook activo, el fichero se quedó **exactamente así**. Si hubiera corrido, Prettier lo habría dejado en una línea.
 
-1. `winget install jqlang.jq`. Mantiene el hook idéntico al del curso.
-2. Reescribirlo en Node, que ya es dependencia obligatoria del proyecto. Funciona en cualquier máquina capaz de arrancar FlowSync, Windows incluido, sin instalar nada. Se hizo así en la rama `feat/login-frontend` del Módulo 1, en `.claude/hooks/format-frontend.mjs`, y quedó probado contra rutas de `frontend/`, de `backend/`, fuera del proyecto y con payloads malformados.
+**Arreglo**: la ruta se extrae con `node -e`, que sí está garantizado -el proyecto entero lo necesita-, y **se quita el `2>/dev/null`**. Si Prettier falla ahora, lo dice por `stderr`. Se conserva el `|| true` para que un fallo del formateador no aborte la edición, que es una decisión distinta de esconderlo.
 
-La versión en Node además cierra un agujero de la original: el `case` de shell comparaba prefijos de cadena y se dejaba engañar por un `..`, mientras que `path.relative` no.
+**Cómo se comprobó el arreglo**, ejecutando el comando del hook a mano con un payload simulado, porque los hooks se cargan al arrancar la sesión y el cambio no aplica a la sesión en curso:
 
----
+| Caso | Resultado |
+|---|---|
+| Fichero de `frontend/` mal formateado | **Prettier lo reformatea**: `export const sinFormato = { a: 1, b: 2 }` |
+| Fichero de `backend/` | Intacto, como debe |
+| Payload que no es JSON | Sale `0` sin reventar |
+
+**Lo que enseña, y es el módulo entero en un hook de tres líneas**: `|| true` convirtió una herramienta rota en una herramienta invisible. Durante dieciocho días el formateo del frontend dependió de que alguien corriera `npm run format` a mano, y nada lo dijo. La primera vez que se miró, se cayó a la primera.
 
 ## H-08 · `AGENTS.md` es un symlink que Windows no materializa
 
@@ -311,7 +319,7 @@ En el repo, `AGENTS.md` tiene modo `120000`, es decir un enlace simbólico a `CL
 
 ## H-09 · `database/schema.ts` se regenera sin formato y rompe el lint
 
-**Severidad: baja.** Reincidente: aparece cada vez que se corren migraciones.
+**Severidad: baja.** **Vigilado**, que aquí es lo alcanzable. Sigue siendo reincidente -el generador reescribe el fichero cada vez que se corren migraciones- y no hay forma de impedirlo desde fuera. Lo que sí hay es que `database/schema.ts` **no está excluido del lint**, así que una regeneración mal formateada pone `npm run lint` en rojo, y ese lint corre en CI. Comprobado el 2026-09-09: el fichero pasa Prettier hoy.
 
 `node ace migration:run` regenera `backend/database/schema.ts` con una línea larga que Prettier quiere partir. El lint del backend falla con un error `prettier/prettier`.
 
@@ -493,7 +501,7 @@ El requisito «Lo que cada tarea muestra de su responsable» dice que junto a la
 
 ## H-18 · Los changes se archivaron con verificaciones marcadas sin hacer
 
-**Severidad: alta.** Abierto. Es de proceso, no de código, y es el mecanismo que produjo H-15, H-16 y H-17.
+**Severidad: alta.** **Cerrado el 2026-09-09.** Es de proceso, no de código, y es el mecanismo que produjo H-15, H-16 y H-17. Lo cierra una comprobación del verificador: un change archivado con casillas sin marcar tiene que declarar **cuáles y qué costó**, en una sección «Lo que no se ejecutó» con filas de verdad -la séptima revisión adversarial ya intentó pasarla con la sección vacía-. **Vista morder el mismo día**: al recuperar el change de [H-31](#h-31--el-change-archivado-que-las-decisiones-citaban-no-cruzó-de-rama) apareció con tres casillas mudas y la build se puso roja hasta declararlas.
 
 `openspec/changes/archive/2026-08-13-add-task-list/tasks.md` contiene sin marcar:
 
