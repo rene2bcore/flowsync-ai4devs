@@ -244,8 +244,16 @@ jobs:
             # `gh run view --log-failed`: el unico sitio donde estaba exigia
             # sesion en el navegador. Un fallo que cuesta leer se investiga
             # menos, que es media razon para que no se arregle.
-            echo "--- el revisor fallo, esto es lo que dijo ---" >&2
-            tail -c 4000 /tmp/error.txt >&2 || true
+            # Se vuelcan **los dos** ficheros. La primera vez que este bloque
+            # se ejecutó, `error.txt` salió vacío y el diagnóstico se perdió:
+            # el CLI escribe parte de sus errores en **stdout**, que aquí va a
+            # `informe.md`. Es el mismo caso que `node ace`, ya anotado en
+            # `scripts/verificar-docs.mjs`, y la misma lección: no asumas en qué
+            # descriptor escribe un programa, mira los dos.
+            echo "--- el revisor fallo. stderr: ---" >&2
+            tail -c 3000 /tmp/error.txt >&2 || true
+            echo "--- y stdout: ---" >&2
+            tail -c 3000 /tmp/informe.md >&2 || true
 
             {
               echo "## La revisión adversarial no pudo ejecutarse"
