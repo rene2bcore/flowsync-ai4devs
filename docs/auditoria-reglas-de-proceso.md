@@ -65,7 +65,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 |---|---|---|---|---|
 | R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | Un hook de `pre-commit` que mire la rama | **No se cumple.** **45 commits nuestros** van directos sobre ramas `sN/*`: 12 en `s3/start` y 33 en `s4/start` |
 | R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | **Se cumple.** **6 unidades de trabajo, 6 PR**: #12, #14, #15, #21, #22 y #26. Ninguna se quedó sin abrir |
-| R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple a mano; no se cumple automáticamente.** **7 revisiones** ejecutadas en local, todas con hallazgos reales. El job **no ha revisado nunca**: sin credencial, se omite en verde |
+| R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple.** **8 revisiones** en local, todas con hallazgos reales, y desde el 2026-09-09 **también en CI**: con la credencial puesta, el job nombró un defecto plantado con su `fichero:línea` y el escenario roto, y encontró uno más que no estaba plantado |
 | R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **No se puede comprobar.** No hay repositorio donde mirarlo. Es la misma categoría que R-13, en pequeño |
 | R-05 | Un cambio en rutas, controladores o validadores cierra con el contrato al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple en local, y desde el 2026-09-08 también en un PR del fork.** El script muerde -16 comprobaciones, vistas fallar mutando-. El **job se ha visto en rojo** sobre `pull_request`, y encontró un defecto que el verde local no veía. En el PR del curso sigue sin correr: 35 en `action_required`. Es [H-24](hallazgos.md) |
 | R-06 | Verificar por código de salida, nunca por la última línea impresa | **Silencioso** | Nada lo comprueba. Es una forma de mirar | **No se puede comprobar desde el repositorio.** Ningún artefacto registra cómo se miró un resultado. Lo único que deja rastro son los mensajes de commit que citan la salida, y eso mide lo que se escribe, no lo que se hizo |
@@ -91,7 +91,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 |---|---|---|---|
 | R-01 · Rama por unidad de trabajo | **Sí**: 45 commits y nadie lo notó | **Sí, previniendo** | **Bajar**: hook de `pre-commit` que rechace `main` y `sN/*` |
 | R-02 · `/commit` y `gh pr create` | No: se nota que no hay PR | — | **Conservar arriba**. 5 de 5 |
-| R-03 · Adversarial sobre el PR | **Sí** | Su **ejecución** sí; su criterio no | **Bajar la ejecución** (el job existe y no funciona), **conversación** el criterio |
+| R-03 · Adversarial sobre el PR | **Sí** | Su **ejecución** sí; su criterio no | **Bajada, y vista morder** el 2026-09-09. El criterio sigue siendo **conversación** |
 | R-04 · No repetir el resumen en el chat | No | No relevante | **Borrar**. No protege nada y alarga el contexto |
 | R-05 · Contrato al día y verificador ejecutado | **Sí** | **Sí** | **Ya bajada, y rota**: [H-24](hallazgos.md). Arreglarla es el trabajo, no reclasificarla |
 | R-06 · Verificar por código de salida | **Sí** | No: ningún artefacto registra cómo se miró | **Conversación** |
@@ -149,7 +149,9 @@ Su modo de fallo es el peor de los catorce. Las demás, cuando fallan, dejan el 
 
 El 2026-09-02 se le puso un job de CI al lado: `.github/workflows/revision-adversarial.yml`, con su calibración en `.github/calibracion-revision.md`.
 
-**Y su estado, ya contrastado, es «se cumple a mano y no automáticamente».** Por R-14: el job está escrito y **no se le ha visto funcionar ni una vez**. Faltan la credencial -`CLAUDE_CODE_OAUTH_TOKEN`, que sale de `claude setup-token` y va contra la suscripción- y una prueba con un defecto plantado que confirme que el informe lo nombra. Lo que sí se cumple son las **siete revisiones ejecutadas en local**, todas con hallazgos reales que acabaron en código.
+**Y su estado, ya contrastado, es «se cumple».** Los dos pasos que faltaban están hechos: la credencial `CLAUDE_CODE_OAUTH_TOKEN` se puso el 2026-09-09, y el job **se ha visto morder** sobre un defecto plantado -la tercera condición de `isOverdueOn`, que es H-15-. Lo nombró en `task.ts:75-78`, citó los escenarios rotos de la spec, y añadió un segundo grave que nadie había plantado: el docblock que seguía prometiendo tres condiciones.
+
+Es la primera regla del repositorio que recorre el camino entero: **escrita → bajada a un job → vista fallar**. Las demás están en una de las dos primeras etapas.
 
 Marcarlo como resuelto porque existe el fichero sería el error exacto que este documento describe, cometido en el documento que lo describe. Ya pasó una vez con H-22.
 

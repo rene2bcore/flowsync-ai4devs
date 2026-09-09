@@ -97,11 +97,30 @@ No cuántos produce. Un revisor que devuelve veinte cosas ciertas y ninguna acci
 
 De referencia, las cinco revisiones manuales del Módulo 4: las cinco encontraron algo real y las cinco terminaron en código. Ese es el listón que la versión automática tiene que sostener, y si baja, lo que hay que revisar es esta calibración, no el modelo.
 
-## Estado: parcialmente verificado
+## Estado: verificado el 2026-09-09
 
-**Esta comprobación todavía no cuenta** (R-14). El revisor no se ha ejecutado ni una vez.
+**Esta comprobación ya cuenta** (R-14). Se le ha visto morder.
 
-### Lo que sí se ha visto funcionar
+### La prueba con un defecto plantado
+
+Rama `test/ver-morder-al-revisor`, [PR rene2bcore#2](https://github.com/rene2bcore/flowsync-ai4devs/pull/2), cerrado sin fusionar. Se quitó la tercera condición de `isOverdueOn`, que es [H-15](../docs/hallazgos.md), y se abrió el cambio como pull request.
+
+**El revisor lo nombró**, y con lo que la calibración le exige:
+
+| Qué se le pedía | Qué hizo |
+|---|---|
+| Citar `fichero:línea` leída | `backend/app/models/task.ts:75-78` |
+| Nombrar el escenario roto | `openspec/specs/tasks/spec.md:392`, y los escenarios de `:416-417` y `:419-422` |
+| Dar un caso concreto | Tarea `done` con `dueDate` anterior → `GET /tasks/:id` devuelve `isOverdue: true` con `200` |
+| Una línea si no hay menores | «Ninguno», diciendo que no descartó ninguno |
+
+**Y encontró un segundo grave que no estaba plantado**: el docblock de `:58-59` seguía prometiendo tres condiciones mientras el código comprobaba dos. Es la categoría «comentario que miente», y es exactamente la forma que tenía H-15 la primera vez.
+
+Cuarenta segundos de ejecución, muy por debajo del tope de diez minutos y de los cuarenta turnos.
+
+**Lo que esto descarta**, y era la duda real: que la regla de «no reportar lo que ya vigila otra comprobación» le hiciera callar. Las dos capas deterministas estaban en rojo -verificador y dos pruebas- y aun así reportó, porque lo que contrastó fue el código contra la spec, no contra la suite.
+
+### Lo que se había visto antes de eso
 
 Primera ejecución, `2026-09-02`, [run 33669154850](https://github.com/rene2bcore/flowsync-ai4devs/actions/runs/33669154850), disparada por el push del propio commit que añade el workflow:
 
@@ -122,11 +141,14 @@ Todo lo demás, y es la mayor parte:
 | Que `CLAUDE_CODE_OAUTH_TOKEN` autentique al CLI en el runner | `claude setup-token` existe y lo dice el propio CLI, pero el nombre exacto de la variable no se ha comprobado contra una ejecución. Si falla, el resumen del job lo dirá y se ajusta |
 | La extracción del prompt desde `.claude/agents/` | Probada en local, no en el runner |
 | La publicación del informe, y su caída al resumen cuando el PR vive en otro repositorio | Nunca se ha llegado ahí |
-| **Que el revisor encuentre algo** | Lo importante, y lo que falta entero |
+| ~~Que el revisor encuentre algo~~ | **Visto el 2026-09-09.** Ver arriba |
 
-### Qué falta, en orden
+### Qué queda
 
-1. **La credencial** en Settings → Secrets and variables → Actions. Con suscripción: `claude setup-token` en local, y el valor que imprima va como `CLAUDE_CODE_OAUTH_TOKEN`. Sin eso no hay nada más que verificar.
-2. **Verla morder.** Una rama con un defecto plantado de una de las cinco categorías graves -por ejemplo, quitar la tercera condición de `isOverdueOn`, que es H-15- y comprobar que el informe lo nombra. Si no lo nombra, el problema está en el prompt o en esta calibración, y hay que arreglarlo **antes** de fiarse de un verde.
+Los dos pasos que faltaban -la credencial y verla morder- están hechos. `R-03` deja de ser una petición con un job al lado.
 
-Hasta entonces, `R-03` sigue siendo una petición con un job al lado.
+Lo que no está probado y conviene no dar por hecho:
+
+- **Que el informe llegue al PR del curso.** Aquí se publicó en un PR del fork. En `LIDR-academy` el token de nuestro repositorio no puede comentar, y el informe cae al resumen del job.
+- **Que un token caducado se vea en rojo.** La asimetría está escrita y no se ha provocado.
+- **Cuántos de sus hallazgos acaban en código**, que es la métrica de este fichero. Lleva uno de uno, y era plantado.

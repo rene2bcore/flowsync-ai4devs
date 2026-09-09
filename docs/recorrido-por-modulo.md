@@ -320,6 +320,10 @@ Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron
 
 **Demo 3 · el revisor que llega solo.** `REVIEW.md` en la raíz, una pantalla, es lo que se inyecta; la calibración larga se queda con el porqué. **No se adoptó la acción oficial** del directo, y por H-24: exige que el PR viva donde está instalada la GitHub App, y los nuestros no. Queda documentada la trampa del OIDC para el día que eso cambie: sin `github_token`, el job **se salta a sí mismo en verde**.
 
+**Y el 2026-09-09 se le vio morder.** Con la credencial puesta, se plantó H-15 en una rama aparte -quitar la tercera condición de `isOverdueOn`- y el informe la nombró en `task.ts:75-78`, con los escenarios rotos de la spec y el caso concreto. Encontró además un segundo grave que nadie había plantado: el docblock que seguía prometiendo tres condiciones.
+
+Con eso, **R-03 es la primera regla del repositorio que recorre el camino entero**: escrita, bajada a un job, y vista fallar. Las otras trece están en una de las dos primeras etapas.
+
 ### Estado al cerrar la sesión
 
 | | Prework | Tras la sesión |
@@ -330,6 +334,7 @@ Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron
 | Comprobaciones del verificador | 15 | **16** |
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
+| Revisor adversarial en CI | escrito, nunca ejecutado | **visto morder** sobre un defecto plantado |
 | Hallazgos | H-23 | H-23 corregido, **H-24 y H-25** |
 
 **Hallazgos del prework: uno nuevo, y nueve que volvieron.**

@@ -2,7 +2,7 @@
 
 > Qué hace el job, qué falta para que funcione, y por qué **no usamos la acción oficial** aunque sea lo que hizo el directo.
 >
-> Escrito el 2026-09-08, en la Demo 3 del Módulo 5.
+> Escrito el 2026-09-08 en la Demo 3 del Módulo 5, y actualizado el 09 con la credencial puesta y el revisor visto morder.
 
 ## Qué hay montado
 
@@ -30,11 +30,15 @@ El diff se calcula en el runner y se le entrega **ya escrito en un fichero**, as
 
 **Lo que no sirve**: OpenRouter, Cline, o cualquier otro proveedor. El CLI de Claude Code autentica contra Anthropic, Bedrock, Vertex o Foundry, y nada más. Cline no es un proveedor: es una extensión que consume claves que ya tengas.
 
-### Lo único que falta
+### El secreto, puesto el 2026-09-09
 
-Crear el secreto en **Settings → Secrets and variables → Actions** del fork, con el valor que imprima `claude setup-token`. Nada más: no hace falta GitHub App, porque no usamos la acción oficial.
+```bash
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo rene2bcore/flowsync-ai4devs
+```
 
-Mientras no exista, el job **se omite en verde** y lo dice en el resumen. La asimetría es deliberada: sin configurar es un estado esperado; configurado y roto sale **rojo**, porque entonces alguien cuenta con una revisión que no se ejecuta.
+Va en el **fork**, no en el repositorio del curso, y no hace falta GitHub App porque no usamos la acción oficial.
+
+Mientras no existía, el job **se omitía en verde** y lo decía en el resumen. La asimetría es deliberada y sigue en pie: sin configurar es un estado esperado; configurado y roto sale **rojo**, porque entonces alguien cuenta con una revisión que no se ejecuta. Esa segunda mitad **no se ha provocado todavía**.
 
 ## Por qué no la acción oficial
 
@@ -48,7 +52,7 @@ El directo usa `anthropics/claude-code-action@v1`, que publica comentarios **en 
 | El código vive en | `rene2bcore/flowsync-ai4devs` |
 | ¿Podemos instalar la GitHub App en el repo del curso? | **No.** No somos administradores |
 | ¿Recibe secretos un `pull_request` desde un fork? | **No.** Es una decisión de seguridad de GitHub |
-| ¿Corre siquiera el workflow allí? | **No.** 16 ejecuciones en `action_required`, ninguna aprobada. Es [H-24](hallazgos.md) |
+| ¿Corre siquiera el workflow allí? | **No.** 35 ejecuciones en `action_required`, ninguna aprobada. Es [H-24](hallazgos.md) |
 
 Por eso nuestro job dispara en **`push`** y busca si esa rama tiene un PR abierto arriba, en vez de esperar un evento `pull_request` que nunca llega con permisos. Es más feo y es lo que funciona.
 
@@ -67,14 +71,18 @@ La acción oficial cambia el token OIDC del workflow por uno efímero de la GitH
 
 **Verde sin haber revisado nada** es exactamente el modo de fallo que [R-14](auditoria-reglas-de-proceso.md) describe: una comprobación que da una garantía que no existe. El fix es una línea, `github_token: ${{ secrets.GITHUB_TOKEN }}`, y el motivo de que exista la validación es bueno: sin ella, cualquiera podría meter un workflow con permisos elevados y ejecutarlo antes de que nadie lo revise.
 
-**Y nuestro job tiene hoy la misma forma de fallo, por otro motivo**: sus diez ejecuciones son verdes y **ninguna ha revisado nada**, porque no hay credencial. La diferencia es que la nuestra lo dice en el resumen. Eso lo hace menos grave, no correcto.
+**Y nuestro job tuvo esa misma forma de fallo hasta el 2026-09-09**: diez ejecuciones verdes y **ninguna había revisado nada**, por falta de credencial. La diferencia era que la nuestra lo decía en el resumen, lo que la hacía menos grave, no correcta. Con el secreto puesto, la primera ejecución real encontró dos hallazgos graves.
 
-## Cómo verlo funcionar, cuando haya credencial
+## Visto funcionar, el 2026-09-09
 
-Por R-14, en este orden, y ninguna revisión cuenta hasta el paso 2:
+Por R-14, en dos pasos, y ninguna revisión contaba hasta el segundo. Los dos están hechos.
 
-1. Crear el secreto y empujar a una rama con PR abierto. El informe debe aparecer en el resumen del job.
-2. **Verlo morder.** Plantar un defecto de una de las siete categorías graves -por ejemplo quitar la tercera condición de `isOverdueOn`, que es [H-15](hallazgos.md)- y comprobar que el informe **lo nombra con su `fichero:línea`**. Si no lo nombra, el problema está en el prompt o en `REVIEW.md`, y hay que arreglarlo **antes** de fiarse de un verde.
+1. **Credencial puesta.** `claude setup-token` y `gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo rene2bcore/flowsync-ai4devs`. El job dejó de omitirse y ejecutó sus siete pasos.
+2. **Visto morder.** Rama `test/ver-morder-al-revisor` con la tercera condición de `isOverdueOn` quitada, que es [H-15](hallazgos.md), abierta como PR en el fork. El informe la nombró en `backend/app/models/task.ts:75-78`, citó los escenarios rotos de `openspec/specs/tasks/spec.md` y dio el caso concreto: tarea `done` con fecha pasada devuelve `isOverdue: true` con `200`.
+
+**Y encontró un segundo grave que no estaba plantado**: el docblock de `:58-59` seguía prometiendo tres condiciones. Cuarenta segundos, muy por debajo del tope.
+
+Lo que la prueba descarta, y era la duda de diseño: que la regla de «no reportar lo que ya vigila otra comprobación» le hiciera callar. El verificador y dos pruebas estaban en rojo por lo mismo, y aun así reportó, porque contrastó contra la spec y no contra la suite.
 
 ## En qué se va el dinero
 
@@ -88,4 +96,6 @@ Precios oficiales en [claude.com/pricing](https://claude.com/pricing). No se cop
 
 **Tres revisores en cascada** en vez de uno: el adversarial encuentra, un segundo descarta falsos positivos, y un tercero prioriza qué aplica solo y qué necesita criterio humano. El argumento de fondo es que el cuello de botella ya no es escribir código sino verificarlo.
 
-No se implementa hoy porque **el primero todavía no se ha visto morder ni una vez**. Encadenar tres revisores sobre uno que no cuenta multiplica el gasto por tres y la garantía por cero.
+El primero ya se ha visto morder, así que el argumento que lo bloqueaba ha caído. Sigue sin implementarse por otro, más débil pero honesto: **lleva un hallazgo real de un caso, y era plantado**. La métrica de la calibración es cuántos acaban en código; con una muestra de uno no hay nada que priorizar ni falsos positivos que descartar.
+
+Cuando el revisor lleve unas cuantas revisiones de cambios de verdad, esa cascada será la siguiente pieza.
