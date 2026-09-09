@@ -926,6 +926,28 @@ En `frontend/src/auth/auth-provider.tsx`, un 401 durante la rehidratación inici
 
 El tercero es el que justifica que la segunda rama exista: sin ella, un corte de red pasajero habría cerrado la sesión.
 
+## H-33 · El tablero de Jira llevaba dieciséis días contradiciendo al repositorio
+
+**Rama: ninguna, es de proceso. Severidad: media.** **Cerrado el 2026-09-09.**
+
+El tablero `LID` no se tocaba desde el **2026-08-24**, el día que terminó el Módulo 2. Entre medias el repositorio pasó por los módulos 3, 4 y 5.
+
+Resultado: **seis historias implementadas y probadas seguían en «Tareas por hacer»**. Quien mirase el tablero para saber qué existe habría concluido que no existía nada de la gestión de tareas.
+
+**El propio backlog ya lo había previsto.** Dice, desde el Módulo 2: «el tablero es seguimiento del trabajo; si se contradice con el repositorio, manda el repositorio». La regla estaba escrita y no impidió nada, que es el argumento del Módulo 5 aplicado a una herramienta que no es código.
+
+**Arreglo, con el respaldo en `docs/alcance-funcional.md` y no en la memoria**: 18 issues a Finalizada -LID-3, LID-5 a LID-15, LID-17 a LID-20, LID-24 y LID-25- y un comentario en la épica explicando cada una.
+
+**Lo que se deja abierto, y no es olvido**:
+
+| | Por qué |
+|---|---|
+| LID-21, LID-22, LID-23 | Declaradas **fuera del alcance** del MVP |
+| LID-16 · persistencia del filtro | El filtro **sí persiste en la URL** con `useSearchParams`. No se cierra porque no está claro si la subtarea pedía eso o persistencia entre sesiones, y marcarla sin saberlo sería el defecto que este registro persigue |
+| LID-4 · la épica E2 | Tiene hijas abiertas. Cerrarla exige resolver antes la ambigüedad de LID-16, y eso es una decisión de producto |
+
+**Por qué no se puede bajar a un guardarraíl**, y conviene decirlo en vez de prometerlo: haría falta que algo supiera qué historia corresponde a qué código, y eso solo lo sabe una persona. Va donde va lo que no se puede comprobar: a la conversación, con la ventaja de que ahora hay un documento -`alcance-funcional.md`- contra el que contrastarlo en diez minutos.
+
 ---
 
 # Al abrir el Módulo 5
