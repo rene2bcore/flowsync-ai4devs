@@ -848,7 +848,7 @@ Es el argumento del Módulo 5 aplicado al propio verificador: **una regla escrit
 
 ## H-30 · El PR es demasiado grande para una sola revisión
 
-**Rama: `feat/sesion-5-guardarrailes`. Severidad: media.** Abierto. Es un hallazgo sobre **nuestro proceso**, no sobre el revisor.
+**Rama: `feat/sesion-5-guardarrailes`. Severidad: media.** **Cerrado el 2026-09-09**, partiendo la unidad de trabajo. Es un hallazgo sobre **nuestro proceso**, no sobre el revisor.
 
 Tras arreglar [H-27](#h-27--la-puerta-del-revisor-buscaba-el-pr-con-una-consulta-que-nunca-encuentra-nada) y [H-28](#h-28--la-lista-de-negación-del-revisor-nombraba-una-herramienta-que-su-versión-no-conoce), y después de una ejecución completa que produjo [H-29](#h-29--dos-comprobaciones-del-verificador-se-satisfacían-con-un-comentario), la siguiente murió:
 
@@ -880,7 +880,34 @@ Lo digo así porque este documento llegó a afirmar «la mitigación basta para 
 
 De **8.607 a 4.966 líneas**, en 46 ficheros. Sigue sin saberse dónde está el límite, y por eso el aviso de las 6.000 se queda.
 
-**Lo que queda por decidir, y es de proceso**: la unidad de trabajo. Un PR por módulo produce diffs de este tamaño cuando la base no avanza. Las opciones son revisar por commit, revisar solo lo que cambia desde la última revisión, o partir la unidad. Ninguna es gratis y esto no es el sitio para elegir: va a la conversación que la auditoría ya declara pendiente para R-01 y R-03.
+## Cómo se cerró: partiendo la unidad, no subiendo el tope
+
+**El diagnóstico era correcto y la solución no estaba en la herramienta.** La rama de la sesión sale de la del port, que sigue con su PR abierto porque la base nunca se fusiona. Son **dos unidades de trabajo en un mismo diff**, y el revisor pagaba por leer las dos.
+
+Medidas por separado, con las exclusiones ya aplicadas:
+
+| Unidad | Contra qué | Tamaño |
+|---|---|---:|
+| El port del Módulo 4 | `upstream/s5/start` | 3.265 líneas, 36 ficheros |
+| **La sesión del Módulo 5** | **la rama del port** | **1.934 líneas, 17 ficheros** |
+| Las dos juntas, que es lo que recibía | `upstream/s5/start` | 5.173 líneas, 49 ficheros |
+
+**Lo que se cambió**: la base de revisión deja de ser la del pull request. Si la rama de **otro PR nuestro abierto** es ancestro de esta, ese trabajo ya tuvo su propia revisión y su propia base, así que se revisa contra ella. Si hay varias, gana la más cercana. Si no hay ninguna, la base del PR, que es el caso normal.
+
+**Se descubre preguntando, no con una lista que mantener.** Un fichero con las ramas padre envejecería igual que la documentación que este repositorio persigue: la relación ya está en git y en los PR abiertos, y se lee en el momento.
+
+**Cómo se comprobó**, extrayendo la función del propio YAML y ejecutándola contra el repositorio real:
+
+```
+feat/portar-cierres-modulo-4: ancestro, 26 commits por delante
+s4/start, s3/start, docs/alcance-mvp, feat/login-frontend: no son ancestro
+elegida: feat/portar-cierres-modulo-4
+diff contra esa ref: 1934 lineas en 17 ficheros
+```
+
+Las cuatro ramas descartadas lo son **por el salto de rama**: ninguna es ancestro de esta, y por eso no se cuelan. La regla no necesita saber nada del curso ni de los módulos.
+
+**Lo que sigue sin resolverse, y no es de herramienta**: un PR por módulo sobre una base que no avanza sigue siendo una unidad grande. Lo que se ha arreglado es que **el revisor vea una sola**. Si mañana la sesión del Módulo 6 sale de esta, la regla la encontrará sola; si alguien empieza tres unidades encadenadas sin abrir PR, no. Eso va a la conversación que la auditoría declara pendiente para R-01.
 
 ## H-31 · El change archivado que las decisiones citaban no cruzó de rama
 

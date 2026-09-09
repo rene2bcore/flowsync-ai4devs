@@ -71,6 +71,45 @@ jobs:
         run: |
           set -euo pipefail
 
+          # ---------------------------------------------------------------
+          # La base de revisión: **una unidad de trabajo, no dos**.
+          #
+          # Nuestras ramas se apilan porque la base nunca se fusiona: la del
+          # Módulo 5 sale de la del port del 4, que sigue con su PR abierto. Sin
+          # esto, el revisor recibía las dos unidades juntas -5.173 líneas- y
+          # agotaba los 40 turnos leyendo trabajo que ya se revisó por su
+          # cuenta. Era H-30.
+          #
+          # La regla: si la rama de **otro PR nuestro abierto** es ancestro de
+          # esta, ese trabajo ya tuvo su revisión y su base. Se revisa contra
+          # ella, no contra la base del curso. Si hay varias, gana la más
+          # cercana. Si no hay ninguna, la base del PR, que es el caso normal.
+          #
+          # Se descubre preguntando, no con un fichero que mantener al día: una
+          # lista de ramas escrita a mano envejece igual que la documentación
+          # que este repositorio persigue.
+          unidad_anterior() {
+            local rama="$1" duenio="$2" upstream="$3"
+            local candidatas mejor="" mejor_n=999999 c n
+
+            local consulta='.[] | select(.headRepositoryOwner.login == $d) | .headRefName'
+            candidatas=$(gh pr list --repo "$upstream" --state open --json headRefName,headRepositoryOwner --limit 50 | jq -r --arg d "$duenio" "$consulta")
+
+            for c in $candidatas; do
+              [ "$c" = "$rama" ] && continue
+              git fetch --quiet origin "$c" 2>/dev/null || continue
+              git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null || continue
+              n=$(git rev-list --count FETCH_HEAD..HEAD)
+              if [ "$n" -lt "$mejor_n" ]; then
+                mejor="$c"
+                mejor_n="$n"
+                git update-ref "refs/unidad-anterior" FETCH_HEAD
+              fi
+            done
+
+            [ -n "$mejor" ] && echo "$mejor"
+          }
+
           # Sin credencial no se revisa, y **no se falla**. Un job en rojo por
           # un secreto que falta enseña a la gente a ignorar el rojo, que es la
           # forma más rápida de matar un guardarraíl. Los PR desde un fork no
@@ -87,8 +126,19 @@ jobs:
             exit 0
           fi
 
+          rama="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          duenio="${GITHUB_REPOSITORY%%/*}"
+          upstream="LIDR-academy/flowsync-ai4devs"
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "base=origin/${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+            base="origin/${{ github.base_ref }}"
+            anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
+            if [ -n "$anterior" ]; then
+              base="refs/unidad-anterior"
+              echo "revisando solo esta unidad, sobre \`$anterior\`" >> "$GITHUB_STEP_SUMMARY"
+            fi
+
+            echo "base=$base" >> "$GITHUB_OUTPUT"
             echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
             echo "repo_pr=${{ github.repository }}" >> "$GITHUB_OUTPUT"
             echo "seguir=si" >> "$GITHUB_OUTPUT"
@@ -96,10 +146,6 @@ jobs:
           fi
 
           # En `push` solo se revisa si esa rama ya es un cambio propuesto.
-          rama="${GITHUB_REF#refs/heads/}"
-          duenio="${GITHUB_REPOSITORY%%/*}"
-          upstream="LIDR-academy/flowsync-ai4devs"
-
           # `gh pr list --head` espera **solo el nombre de la rama**. Pasarle
           # `duenio:rama` -que es la forma de la API REST- devuelve siempre `[]`,
           # y esta puerta se omitía en verde en cada push sin revisar nada.
@@ -124,7 +170,14 @@ jobs:
           git remote add upstream "https://github.com/$upstream.git"
           git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
 
-          echo "base=upstream/$(echo "$pr" | jq -r '.[0].baseRefName')" >> "$GITHUB_OUTPUT"
+          base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
+          anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
+          if [ -n "$anterior" ]; then
+            base="refs/unidad-anterior"
+            echo "revisando solo esta unidad, sobre \`$anterior\`" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "base=$base" >> "$GITHUB_OUTPUT"
           echo "pr=$(echo "$pr" | jq -r '.[0].number')" >> "$GITHUB_OUTPUT"
           echo "repo_pr=$upstream" >> "$GITHUB_OUTPUT"
           echo "seguir=si" >> "$GITHUB_OUTPUT"

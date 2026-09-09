@@ -65,6 +65,8 @@ Sin preámbulo, sin resumen final, sin felicitaciones por el cambio.
 
 Una ejecución por cambio propuesto, no por commit. `concurrency` cancela la revisión anterior cuando llega un push nuevo, y en `push` el job sale antes de gastar nada si la rama no tiene PR abierto.
 
+**Y desde el 2026-09-09 se revisa una sola unidad de trabajo.** Si la rama de otro PR nuestro abierto es ancestro de esta, ese trabajo ya tuvo su revisión: la base pasa a ser esa rama y no la del pull request. En el caso que lo motivó bajó el diff de 5.173 a 1.934 líneas. Es [H-30](../docs/hallazgos.md), y el ahorro no es solo de turnos: **pagar por revisar dos veces el mismo trabajo es la forma más rápida de que las revisiones dejen de leerse**.
+
 `--max-turns 40` es el tope duro. Si una revisión lo agota, el problema es el tamaño del diff, no el tope.
 
 ### De dónde sale el gasto
