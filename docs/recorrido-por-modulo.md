@@ -8,7 +8,7 @@
 >
 > **Para rehacerlo, no para leerlo**: los pasos concretos, con los comandos, están en [`guia-de-replicacion.md`](guia-de-replicacion.md). Este documento cuenta qué pasó; esa guía cuenta cómo volver a hacerlo.
 >
-> Última revisión: 2026-09-08.
+> Última revisión: 2026-09-09.
 
 ## El resumen, antes del detalle
 
@@ -31,7 +31,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 | Ficheros de prueba, backend | 0 → 0 | - | **0 → 2** | **4 → 15** | **5 → 15** |
 | Ficheros de prueba, frontend | 0 → 0 | - | **0 → 1** | 0 → 1 | **0 → 1** |
 | Pruebas ejecutándose | 0 → 0 | - | **0 → 37 + 21** | **20 → 76 + 28** | **23 → 75 + 28** |
-| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 15** |
+| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 16** |
 | Workflows de CI | - | - | - | **0 → 2** | **0 → 2** |
 | ADR | - | - | - | **0 → 4** | 2 → **7** |
 | Migraciones | 2 → 2 | - | **2 → 5** | 4 → **6** | 4 → **6** |
