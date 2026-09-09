@@ -187,6 +187,36 @@ comprobar('El contrato versionado no declara publica ninguna ruta protegida', ()
   return `${protegidas.size} rutas protegidas, todas con esquema bearer`
 })
 
+comprobar('El contrato versionado no repite ningun parametro', () => {
+  const contrato = JSON.parse(leer('docs/api/openapi.json'))
+  const repetidos = []
+  let revisadas = 0
+
+  for (const [ruta, operaciones] of Object.entries(contrato.paths ?? {})) {
+    for (const [metodo, operacion] of Object.entries(operaciones)) {
+      const parametros = operacion.parameters ?? []
+      if (!parametros.length) continue
+      revisadas++
+
+      // OpenAPI exige que la pareja `name` + `in` sea unica dentro de una
+      // operacion. Un duplicado hace el documento invalido, y las herramientas
+      // que lo consumen se comportan de formas distintas ante el.
+      const vistos = new Set()
+      for (const { name, in: donde } of parametros) {
+        const clave = `${donde}:${name}`
+        if (vistos.has(clave)) repetidos.push(`${claveDeOperacion(metodo, ruta)} -> ${clave}`)
+        vistos.add(clave)
+      }
+    }
+  }
+
+  if (repetidos.length) {
+    throw new Error(`parametros repetidos: ${[...new Set(repetidos)].join(', ')}`)
+  }
+
+  return `${revisadas} operaciones con parametros, ninguno repetido`
+})
+
 comprobar('La regla de vencimiento comprueba sus tres condiciones', () => {
   const modelo = leerCodigo('backend/app/models/task.ts')
   const metodo = modelo.match(/isOverdueOn\(referenceDay: string\): boolean \{([\s\S]*?)\n {2}\}/)

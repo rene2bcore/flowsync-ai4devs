@@ -715,6 +715,43 @@ En OpenAPI eso **no** significa «no se ha dicho nada»: es la forma explícita 
 
 **Y la lección de método**: un guardarraíl que compara dos artefactos **derivados de la misma fuente** no puede detectar que la fuente miente. `openapi:check` estaba en verde y tenía razón: el fichero era idéntico al documento generado. Hacía falta contrastar contra algo que **no** viniera del generador, y eso fue el listado de rutas del framework.
 
+## H-26 · El documento servido en `/api.json` crece en cada petición
+
+**Rama: todas las que traen `@foadonis/openapi`. Severidad: media.** Abierto. Solo afecta a desarrollo.
+
+Cada petición a `/api.json` devuelve un documento con **un parámetro de ruta duplicado más** que la anterior.
+
+**Cómo se verificó**, 2026-09-09, tres peticiones seguidas al servidor de desarrollo:
+
+```
+peticion 1 -> parametros de ruta 'id': 5
+peticion 2 -> parametros de ruta 'id': 6
+peticion 3 -> parametros de ruta 'id': 7
+```
+
+A partir de la segunda, el documento es **OpenAPI inválido**: la especificación exige que la pareja `name` + `in` sea única dentro de una operación.
+
+**La causa**, en `node_modules/@foadonis/openapi/build/src/openapi.js`:
+
+```js
+async buildDocument() {
+    if (this.#document && this.#isProduction) {
+        return this.#document
+    }
+    ...
+}
+```
+
+**El documento se cachea solo en producción.** Fuera de ella se reconstruye en cada petición, y la reconstrucción acumula sobre la metadata de los decoradores en vez de partir de cero.
+
+**Lo que no se ha comprobado, y se dice**: que en producción no ocurra. Se deduce de esa condición, no se ha ejecutado con `NODE_ENV=production`. Dar por bueno un «en producción no pasa» sin reproducirlo es exactamente el error que costó tres módulos con [H-19](#h-19--las-respuestas-de-error-devuelven-traza-rutas-y-el-sql-ejecutado).
+
+**Por qué no lo cazó `openapi:check`**: porque construye el documento **una sola vez, en un proceso nuevo**. Su primera construcción es correcta, así que el fichero versionado está bien y la comparación da verde con razón. El defecto vive en el servidor, no en el fichero.
+
+**Y por qué importa menos de lo que parece**: por [ADR-0007](adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md). El contrato que se integra es `docs/api/openapi.json`, no la URL. La decisión de versionarlo se tomó por otro motivo -hacer la deriva visible en un diff- y resulta que también protege de esto. `/api.json` queda como conveniencia para mirar, no como fuente.
+
+**Qué lo vigila**: una comprobación del verificador que exige `name` + `in` únicos por operación en el fichero versionado. No mira la URL -eso exigiría levantar el servidor en CI-, pero sí ataja el caso en que alguien genere el fichero desde un proceso ya calentado. Vista fallar duplicando el `id` de `GET /tasks/:id` a mano.
+
 ---
 
 # Al abrir el Módulo 5

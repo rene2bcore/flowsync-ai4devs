@@ -19,7 +19,7 @@
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/sesion-5-guardarrailes` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#26](https://github.com/LIDR-academy/flowsync-ai4devs/pull/26) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
-| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23, H-24 y H-25**, y nueve que volvieron |
+| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 a H-26**, y nueve que volvieron |
 
 ### Cómo cambió el proyecto, medido
 
@@ -31,7 +31,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 | Ficheros de prueba, backend | 0 → 0 | - | **0 → 2** | **4 → 15** | **5 → 15** |
 | Ficheros de prueba, frontend | 0 → 0 | - | **0 → 1** | 0 → 1 | **0 → 1** |
 | Pruebas ejecutándose | 0 → 0 | - | **0 → 37 + 21** | **20 → 76 + 28** | **23 → 75 + 28** |
-| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 16** |
+| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 17** |
 | Workflows de CI | - | - | - | **0 → 2** | **0 → 2** |
 | ADR | - | - | - | **0 → 4** | 2 → **7** |
 | Migraciones | 2 → 2 | - | **2 → 5** | 4 → **6** | 4 → **6** |
@@ -43,7 +43,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 
 **Ese salto es el mecanismo que produjo H-22 y los nueve defectos que volvieron.** No es una anomalía del curso: es la forma que tiene este proyecto de enseñar que un arreglo vive en una rama, no en el producto.
 
-**Diecisiete de los veinticinco hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
+**Diecisiete de los veintiséis hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
 
 ---
 
@@ -331,11 +331,11 @@ Con eso, **R-03 es la primera regla del repositorio que recorre el camino entero
 | Reglas con estado contrastado | **0 de 14** | **14 de 14** |
 | ADR | 6 | **7** |
 | Contrato versionado en un fichero | no | **sí**, con su check |
-| Comprobaciones del verificador | 15 | **16** |
+| Comprobaciones del verificador | 15 | **17** |
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
 | Revisor adversarial en CI | escrito, nunca ejecutado | **visto morder** sobre un defecto plantado |
-| Hallazgos | H-23 abierto | **H-23 cerrado**, y dos nuevos: H-24 y H-25 |
+| Hallazgos | H-23 abierto | **H-23 cerrado**, y tres nuevos: H-24, H-25 y H-26 |
 
 **Hallazgos del prework: uno nuevo, y nueve que volvieron.**
 

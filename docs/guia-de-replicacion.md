@@ -6,7 +6,7 @@
 >
 > Los comandos están contrastados contra este repositorio, no escritos de memoria. Los que no se han ejecutado en esta máquina se marcan como tales.
 >
-> Última revisión: 2026-09-08.
+> Última revisión: 2026-09-09.
 
 ## 0 · Lo que hace falta antes de empezar
 
@@ -245,7 +245,7 @@ El verificador se lanza **desde la raíz** y necesita el backend instalado: preg
 openspec validate --specs; echo "specs=$?"
 ```
 
-Lo que tiene que salir hoy en la rama del port: **75 pruebas de backend, 28 de frontend, 16 comprobaciones del verificador, y cuatro ceros.**
+Lo que tiene que salir hoy en la rama del port: **75 pruebas de backend, 28 de frontend, 17 comprobaciones del verificador, y cuatro ceros.**
 
 Los mismos cuatro corren en `.github/workflows/verificacion.yml` y **bloquean**. El revisor adversarial va en un workflow aparte y **no bloquea**, a propósito: un revisor no determinista que tumba la build se desactiva la primera vez que se equivoca con prisa, y entonces no queda ni revisor ni build.
 
