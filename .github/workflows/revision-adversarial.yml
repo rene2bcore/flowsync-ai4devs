@@ -182,12 +182,21 @@ jobs:
           # - `docs/artefactos/*.html` es la versión navegable de los `.md` que
           #   ya van en el diff: leerla es leer lo mismo dos veces.
           # - `package-lock.json` no es prosa revisable.
+          # - **La prosa en `.md`**, añadida el 2026-09-09 tras agotar los turnos
+          #   dos veces. El argumento no es que estorbe: es que **ninguna de las
+          #   siete categorías graves de `REVIEW.md` puede darse en un `.md`**.
+          #   Todas hablan de comportamiento del código y del contrato. Que un
+          #   documento contradiga al código es justo lo que comprueba
+          #   `verificar-docs.mjs`, y eso ya bloquea.
           #
-          # `docs/api/openapi.json` **sí va**, aunque se genere: es el contrato,
-          # y ahí vivía H-25.
+          # `docs/api/openapi.json` **sí va**, aunque se genere y aunque viva en
+          # `docs/`: es el contrato, no prosa, y ahí vivía H-25.
           EXCLUIR=(':(exclude)backend/.adonisjs'
                    ':(exclude)docs/artefactos/*.html'
-                   ':(exclude)**/package-lock.json')
+                   ':(exclude)**/package-lock.json'
+                   ':(exclude)*.md'
+                   ':(exclude)docs/**/*.md'
+                   ':(exclude).github/*.md')
 
           git diff "$BASE...HEAD" --stat -- . "${EXCLUIR[@]}" > /tmp/cambio.txt
           echo >> /tmp/cambio.txt

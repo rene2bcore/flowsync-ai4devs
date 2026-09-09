@@ -860,7 +860,15 @@ Así que **no se sube el tope**. Lo que hay es un PR que apila el port del Módu
 
 **Y se añade un aviso** en el resumen del job por encima de 6.000 líneas, para que la próxima vez se sepa antes de gastar cuatro minutos y una cuota.
 
-**Resultado, comprobado**: con 8.541 líneas el revisor **completó** y devolvió su informe -«Ninguno / Ninguno», que es la respuesta correcta cuando no hay nada sobre el umbral-. La mitigación basta para este tamaño; no se sabe dónde está el límite real y el aviso existe para no volver a encontrarlo por sorpresa.
+**Primera mitigación, y no bastó.** Con 8.541 líneas el revisor completó una vez -devolvió «Ninguno / Ninguno», que es la respuesta correcta cuando no hay nada sobre el umbral- y **volvió a agotar los turnos en la siguiente**, con 8.607. El margen era de sesenta líneas: no era una mitigación, era suerte.
+
+Lo digo así porque este documento llegó a afirmar «la mitigación basta para este tamaño» **después de una sola ejecución**. Es el error que el repositorio persigue, cometido al describirlo: una comprobación que pasa una vez no está probada.
+
+**Segunda mitigación**: se excluye también **la prosa en `.md`**. El argumento no es que estorbe, es que **ninguna de las siete categorías graves de `REVIEW.md` puede darse en un fichero de prosa**: todas hablan de comportamiento del código y del contrato. Que un documento contradiga al código es justo lo que comprueba `verificar-docs.mjs`, y eso ya bloquea.
+
+`docs/api/openapi.json` se queda dentro aunque viva en `docs/`: es el contrato, no prosa, y ahí vivía [H-25](#h-25--el-contrato-versionado-declaraba-públicas-dos-rutas-protegidas).
+
+De **8.607 a 4.966 líneas**, en 46 ficheros. Sigue sin saberse dónde está el límite, y por eso el aviso de las 6.000 se queda.
 
 **Lo que queda por decidir, y es de proceso**: la unidad de trabajo. Un PR por módulo produce diffs de este tamaño cuando la base no avanza. Las opciones son revisar por commit, revisar solo lo que cambia desde la última revisión, o partir la unidad. Ninguna es gratis y esto no es el sitio para elegir: va a la conversación que la auditoría ya declara pendiente para R-01 y R-03.
 
