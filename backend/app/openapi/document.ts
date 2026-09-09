@@ -25,11 +25,3 @@ export async function construirDocumento(): Promise<OpenAPIDocument> {
 export function serializar(documento: OpenAPIDocument): string {
   return `${JSON.stringify(documento, null, 2)}\n`
 }
-
-/**
- * Ruta del fichero versionado, en los segmentos que espera `app.makePath()`.
- * Se resuelve con el helper del framework y no con `join()` sobre
- * `appRoot.pathname`, que en Windows devuelve `/C:/...` y produce una ruta que
- * no existe.
- */
-export const CONTRATO = ['..', 'docs', 'api', 'openapi.json']
