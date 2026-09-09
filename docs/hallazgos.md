@@ -625,7 +625,7 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 ## H-23 · Cuatro rutas de `auth` están fuera del contrato generado
 
-**Rama: `s5/start`. Severidad: media.** Abierto, y **declarado con lista cerrada**.
+**Rama: `s5/start`. Severidad: media.** **Cerrado** el 2026-09-09.
 
 `signup`, `login`, `logout` y `profile` no llevan decoradores de respuesta de `@foadonis/openapi`, así que el documento las publica **con `responses: {}`**: cuatro de las nueve rutas de la API no dicen nada de lo que devuelven.
 
@@ -635,9 +635,16 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 **Por qué no lo encontró nadie antes**: porque un generador **escribe fielmente lo que hay decorado y no dice nada de lo que no lo está**. No hay hueco visible: el documento sale bien formado, completo de su parte, y en silencio sobre el resto. Es el argumento de [ADR-0004](adr/0004-la-documentacion-se-verifica-no-se-regenera.md) llegando por una puerta que no habíamos previsto.
 
-**Por qué se deja abierto**: decorarlas exige esquemas de respuesta -`UserResponse`, `AuthResult`, los cuerpos de alta y acceso- que `app/openapi/schemas.ts` no tiene. Eso es trabajo del módulo sobre esta rama, no de un traslado, y hacerlo dentro del port habría hecho que el PR hiciera algo que no declara.
+**Por qué estuvo abierto**: decorarlas exigía esquemas de respuesta que `app/openapi/schemas.ts` no tenía. Eso era trabajo del módulo sobre esta rama, no de un traslado, y hacerlo dentro del port habría hecho que el PR hiciera algo que no declaraba.
 
-**Qué lo vigila mientras tanto**: una comprobación del verificador con **lista cerrada** de los tres controladores conocidos. No pudre en ninguna de las dos direcciones: si aparece un cuarto controlador sin decorar, falla; y si alguien decora uno de estos tres y no lo quita de la lista, también.
+**Arreglo, 2026-09-09.** Los esquemas que faltaban -`Account`, `AccountResponse`, `AccessTokenGrant`, `AccessTokenResponse`, `LogoutResponse`, `SignupBody`, `LoginBody`- y los decoradores en los tres controladores. Las nueve rutas de la API declaran ahora sus respuestas y su 500.
+
+Dos cosas quedaron documentadas **como son y no como deberían ser**, que es lo que hace útil un contrato:
+
+- El cierre de sesión **no va envuelto en `{ data }`**, y es la única respuesta del proyecto así. Es [H-03](#h-03), que sigue abierto.
+- `fullName` es **obligatorio en el payload aceptando `null`**, no opcional. Es [H-04](#h-04), y omitirlo devuelve 422.
+
+**Qué lo vigila**: la misma comprobación del verificador, con la **lista cerrada ahora vacía**. Vacía sigue mordiendo: cualquier controlador nuevo sin decorar cae en `inesperados` y falla la build. Vista fallar quitándole los decoradores a `ProfileController`: «fuera del contrato, sin declarar: profile_controller.ts (1)». Borrar la comprobación al cerrar el hueco es como vuelven los defectos.
 
 > **Y este hallazgo estuvo tres días sin registrar.** Se le puso número en `scripts/verificar-docs.mjs` y en `docs/capabilities/tasks/README.md` el 2026-09-02, y la entrada no existía: `hallazgos.md` no tenía ningún `H-23`. Un número citado en dos sitios que no apunta a nada es peor que no numerarlo, porque quien lo lea creerá que hay algo escrito. Registrado el 2026-09-05.
 

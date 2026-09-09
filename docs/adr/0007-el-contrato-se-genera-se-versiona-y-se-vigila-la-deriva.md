@@ -79,6 +79,6 @@ Al hacerlo apareció un segundo modo de fallo del mismo tipo: sin la fase `app.s
 
 Al tocar rutas, controladores o transformers hay que **acordarse de `npm run openapi:generate`**, y el job lo recuerda con un rojo si no.
 
-Queda un hueco declarado, y no es pequeño: **[H-23](../hallazgos.md) sigue abierto**. Cuatro rutas de `auth` no llevan decoradores, así que el contrato generado -y ahora también el versionado- **las omite**. Versionarlo no lo arregla: lo hace visible en un fichero, que es más de lo que había.
+**[H-23](../hallazgos.md) quedó cerrado el 2026-09-09**, y versionar el contrato es lo que lo hizo barato: con las cuatro rutas de `auth` visibles en un fichero con `responses: {}`, decorarlas dejó de ser una tarea abstracta. Las nueve rutas declaran hoy sus respuestas y su 500.
 
 Y uno mayor, que este ADR no puede resolver: **[H-24](../hallazgos.md)**. El job existe y en el pull request no ha corrido nunca. Un guardarraíl que no llega al sitio donde se mira es la mitad de un guardarraíl.

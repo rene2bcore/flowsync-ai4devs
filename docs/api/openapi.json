@@ -12,6 +12,208 @@
       }
     },
     "schemas": {
+      "SignupBody": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Ada Lovelace",
+            "description": "Obligatorio en el payload, aceptando `null`. Omitirlo devuelve 422 (H-04)."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          },
+          "passwordConfirmation": {
+            "type": "string",
+            "format": "password",
+            "description": "Debe coincidir con `password`."
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "password",
+          "passwordConfirmation"
+        ]
+      },
+      "AccessTokenResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AccessTokenGrant"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "AccessTokenGrant": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/Account"
+          },
+          "token": {
+            "type": "string",
+            "example": "oat_MTA.abc123",
+            "description": "Access token opaco. Va en `Authorization: Bearer <token>`."
+          }
+        },
+        "required": [
+          "user",
+          "token"
+        ]
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Ada Lovelace",
+            "description": "Nulo cuando la cuenta se registró sin nombre."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@flowsync.test"
+          },
+          "initials": {
+            "type": "string",
+            "example": "AL"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "email",
+          "initials",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorItem"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ValidationErrorItem": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "The title field must be defined"
+          },
+          "rule": {
+            "type": "string",
+            "example": "required"
+          },
+          "field": {
+            "type": "string",
+            "example": "title"
+          }
+        },
+        "required": [
+          "message",
+          "rule",
+          "field"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ErrorItem": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Unauthorized access"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "LoginBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Logged out successfully"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "AccountResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Account"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
       "TaskListResponse": {
         "type": "object",
         "properties": {
@@ -90,68 +292,6 @@
           "id",
           "fullName",
           "initials"
-        ]
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ErrorItem"
-            }
-          }
-        },
-        "required": [
-          "errors"
-        ]
-      },
-      "ErrorItem": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "Unauthorized access"
-          }
-        },
-        "required": [
-          "message"
-        ]
-      },
-      "ValidationErrorResponse": {
-        "type": "object",
-        "properties": {
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ValidationErrorItem"
-            }
-          }
-        },
-        "required": [
-          "errors"
-        ]
-      },
-      "ValidationErrorItem": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "The title field must be defined"
-          },
-          "rule": {
-            "type": "string",
-            "example": "required"
-          },
-          "field": {
-            "type": "string",
-            "example": "title"
-          }
-        },
-        "required": [
-          "message",
-          "rule",
-          "field"
         ]
       },
       "TaskDetailResponse": {
@@ -361,30 +501,154 @@
     },
     "/api/v1/auth/signup": {
       "post": {
+        "summary": "Dar de alta una cuenta y abrir sesión",
         "tags": [
           "NewAccount"
         ],
-        "responses": {},
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Falta un campo, el email ya existe, o las contraseñas no coinciden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Algo falló y no estaba previsto. El cuerpo es siempre el mismo y no lleva traza, ni rutas del disco, ni la sentencia SQL (ADR-0005).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupBody"
+              }
+            }
+          }
+        },
         "parameters": [],
         "security": []
       }
     },
     "/api/v1/auth/login": {
       "post": {
+        "summary": "Abrir sesión y obtener un access token",
         "tags": [
           "AccessTokens"
         ],
-        "responses": {},
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciales inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Algo falló y no estaba previsto. El cuerpo es siempre el mismo y no lleva traza, ni rutas del disco, ni la sentencia SQL (ADR-0005).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          }
+        },
         "parameters": [],
         "security": []
       }
     },
     "/api/v1/account/logout": {
       "post": {
+        "summary": "Cerrar la sesión actual",
         "tags": [
           "AccessTokens"
         ],
-        "responses": {},
+        "responses": {
+          "200": {
+            "description": "Única respuesta del proyecto sin envoltorio `{ data }`. Es H-03.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Algo falló y no estaba previsto. El cuerpo es siempre el mismo y no lleva traza, ni rutas del disco, ni la sentencia SQL (ADR-0005).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
         "parameters": [],
         "security": [
           {
@@ -395,10 +659,42 @@
     },
     "/api/v1/account/profile": {
       "get": {
+        "summary": "La cuenta de quien pregunta",
         "tags": [
           "Profile"
         ],
-        "responses": {},
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin sesión o con un token inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Algo falló y no estaba previsto. El cuerpo es siempre el mismo y no lleva traza, ni rutas del disco, ni la sentencia SQL (ADR-0005).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
         "parameters": [],
         "security": [
           {

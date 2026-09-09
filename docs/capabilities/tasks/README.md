@@ -63,7 +63,7 @@ controladores, así que el documento servido en **`/api.json`** (y la interfaz e
 parámetro `status` con sus tres valores, el `today` obligatorio, los cuerpos de las escrituras y los
 códigos `200`/`201`/`401`/`404`/`422`/`500` de cada operación, cada uno con la forma de lo que devuelve.
 
-**Cuatro operaciones de `auth` siguen fuera del documento**: `signup`, `login`, `logout` y `profile` no llevan decoradores, así que `/api.json` las omite. Es H-23, y decorarlas exige esquemas de respuesta que `app/openapi/schemas.ts` todavía no tiene. Un generador escribe fielmente lo que hay y no dice nada de lo que falta: eso lo vigila una comprobación de `scripts/verificar-docs.mjs` con lista cerrada.
+**Las nueve rutas de la API declaran hoy sus respuestas.** Las cuatro de `auth` -`signup`, `login`, `logout` y `profile`- estuvieron sin decorar hasta el 2026-09-09, publicadas con `responses: {}`. Era H-23, cerrado añadiendo los esquemas que faltaban. Lo vigila una comprobación de `scripts/verificar-docs.mjs` cuya lista de huecos conocidos está **vacía y sigue mordiendo**: un controlador nuevo sin decorar falla la build.
 
 Las formas que se repiten viven en
 [`backend/app/openapi/schemas.ts`](../../../backend/app/openapi/schemas.ts) y se publican en

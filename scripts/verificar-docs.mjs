@@ -320,19 +320,16 @@ comprobar('Toda operación decorada declara el error que no estaba previsto', ()
   // y eso es peor que una respuesta sin declarar: `/api.json` lo devuelve con
   // `"responses": {}` o directamente sin la ruta.
   //
-  // Cuatro operaciones de `auth` están hoy así, y es un hueco de esta rama que
-  // el port no introdujo ni arregla: decorarlas exige esquemas de respuesta que
-  // `app/openapi/schemas.ts` no tiene, y eso es trabajo del módulo, no de un
-  // traslado. Es H-23.
+  // Cuatro operaciones de `auth` estuvieron así hasta el 2026-09-09, y era H-23.
+  // Se cerraron añadiendo a `app/openapi/schemas.ts` los esquemas que faltaban
+  // -`Account`, `AccessTokenGrant`, `SignupBody`, `LoginBody`, `LogoutResponse`-
+  // y decorando los tres controladores.
   //
-  // Se declara con **lista cerrada** y no con un `continue`, para que no pudra
-  // en las dos direcciones: si aparece un quinto controlador sin decorar, falla;
-  // y si alguien decora uno de estos tres y no lo quita de aquí, también.
-  const HUECO_CONOCIDO = [
-    'access_tokens_controller.ts (2)',
-    'new_account_controller.ts (1)',
-    'profile_controller.ts (1)',
-  ]
+  // **La lista se queda vacía a propósito, no se borra la comprobación.** Vacía
+  // sigue siendo un guardarraíl: cualquier controlador nuevo sin decorar cae en
+  // `inesperados` y falla. Borrarla dejaría el hueco sin vigilar justo después
+  // de haberlo cerrado, que es como vuelven los defectos.
+  const HUECO_CONOCIDO = []
   const inesperados = sinDecorar.filter((f) => !HUECO_CONOCIDO.includes(f))
   const yaDecorados = HUECO_CONOCIDO.filter((f) => !sinDecorar.includes(f))
 
@@ -352,7 +349,7 @@ comprobar('Toda operación decorada declara el error que no estaba previsto', ()
     }
   }
 
-  return `${revisadas} operaciones con 500, ${HUECO_CONOCIDO.length} controladores fuera del contrato (H-23)`
+  return `${revisadas} operaciones con 500, ${HUECO_CONOCIDO.length} controladores fuera del contrato`
 })
 comprobar('Ningún change se archiva con casillas mudas', () => {
   // H-18. Un change se archivó con la casilla «verificar que ninguna respuesta

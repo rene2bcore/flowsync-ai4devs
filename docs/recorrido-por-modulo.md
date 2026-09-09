@@ -335,11 +335,11 @@ Con eso, **R-03 es la primera regla del repositorio que recorre el camino entero
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
 | Revisor adversarial en CI | escrito, nunca ejecutado | **visto morder** sobre un defecto plantado |
-| Hallazgos | H-23 | H-23 corregido, **H-24 y H-25** |
+| Hallazgos | H-23 abierto | **H-23 cerrado**, y dos nuevos: H-24 y H-25 |
 
 **Hallazgos del prework: uno nuevo, y nueve que volvieron.**
 
-**H-23** · cuatro rutas de `auth` están fuera del contrato generado. Un generador escribe fielmente lo que hay decorado y **no dice nada de lo que no lo está**: el documento sale bien formado, completo de su parte, y en silencio sobre el resto.
+**H-23** · cuatro rutas de `auth` publicadas con `responses: {}`. Un generador escribe fielmente lo que hay decorado y **no dice nada de lo que no lo está**: el documento sale bien formado, completo de su parte, y en silencio sobre el resto. **Cerrado en la sesión**, cuando versionar el contrato lo hizo visible en un fichero.
 
 Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos** en la rama del curso, porque llega a la misma funcionalidad por otro camino y nunca tuvo nuestros arreglos.
 
@@ -361,7 +361,6 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 
 | | Qué | Por qué |
 |---|---|---|
-| **H-23** | Cuatro rutas fuera del contrato generado | Decorarlas exige esquemas que esta rama no tiene. Vigilado con lista cerrada |
 | - | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
 | - | El revisor adversarial en CI | Escrito y sin credencial. Hasta que se le vea encontrar algo, **no cuenta** |
 | - | **Dos aproximaciones al contrato conviven** | La generada de `s5/start` y ADR-0004, que la descarta. Es material de la sesión |
