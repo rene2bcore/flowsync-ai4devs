@@ -279,7 +279,10 @@ comprobar('Toda operación que resuelve un id declara su 404', () => {
   let revisadas = 0
 
   for (const fichero of controladores) {
-    const codigo = leer(`backend/app/controllers/${fichero}`)
+    // `leerCodigo` y no `leer`: con los comentarios dentro, dejar la cadena
+    // `status: 404` en un comentario del mismo bloque satisface la comprobación
+    // con el decorador real borrado. Reproducido el 2026-09-09, en verde.
+    const codigo = leerCodigo(`backend/app/controllers/${fichero}`)
     if (!codigo.includes('@ApiResponse')) continue
 
     // Se parte por `@ApiOperation`, que es donde empieza cada operación
@@ -327,7 +330,10 @@ comprobar('Toda operación decorada declara el error que no estaba previsto', ()
   let revisadas = 0
 
   for (const fichero of controladores) {
-    const codigo = leer(`backend/app/controllers/${fichero}`)
+    // `leerCodigo` y no `leer`: con los comentarios dentro, dejar la cadena
+    // `status: 404` en un comentario del mismo bloque satisface la comprobación
+    // con el decorador real borrado. Reproducido el 2026-09-09, en verde.
+    const codigo = leerCodigo(`backend/app/controllers/${fichero}`)
     const acciones = (codigo.match(/\n {2}async /g) ?? []).length
     if (!acciones) continue
 

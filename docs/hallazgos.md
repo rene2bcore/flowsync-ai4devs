@@ -809,6 +809,33 @@ Permission deny rule "SlashCommand" matches no known tool — check for typos.
 
 Tres arreglos para que un guardarraíl se ejecutara una vez, y **los dos primeros salían en verde**. Es el argumento entero del Módulo 5 en una sola pieza de infraestructura.
 
+## H-29 · Dos comprobaciones del verificador se satisfacían con un comentario
+
+**Rama: `s4/start` en adelante. Severidad: alta.** **Cerrado** el 2026-09-09.
+
+Lo encontró **el revisor adversarial en CI**, en su primera ejecución completa sobre `push`. Es el primer hallazgo que produce el guardarraíl automático sin que nadie le plantara nada.
+
+Las comprobaciones «Toda operación que resuelve un id declara su 404» y «Toda operación decorada declara el error que no estaba previsto» leían el controlador con `leer()` -código crudo, comentarios incluidos- en vez de `leerCodigo()`, que los quita.
+
+**Es exactamente la clase de defecto que la cabecera de ese fichero describe**, escrita meses antes:
+
+> «La revisión adversarial del PR #21 demostró que cuatro de estas comprobaciones se satisfacían con un comentario. Una comprobación que un comentario puede satisfacer no comprueba nada.»
+
+Cuatro se arreglaron entonces. **Estas dos se escribieron después y volvieron a nacer con el defecto**, con la advertencia treinta líneas más arriba en el mismo fichero.
+
+**Cómo se verificó**: borrando el `@ApiResponse({ status: 404, ... })` real de `TasksController.show` y dejando en su lugar un comentario que contiene la cadena `status: 404`.
+
+```
+antes del arreglo:  OK    Toda operación que resuelve un id declara su 404 · 3 operaciones
+después:            FALLA sin 404 declarado: tasks_controller.ts
+```
+
+**Arreglo**: las dos lecturas pasan por `leerCodigo()`.
+
+**Lo que enseña, y no es lo obvio.** No es «acuérdate de usar el helper». Es que **una advertencia escrita en la cabecera de un fichero no impide repetir el defecto treinta líneas más abajo**, ni siquiera a quien la escribió. Lo que sí lo impidió fue un revisor leyendo el fichero entero y contrastándolo consigo mismo.
+
+Es el argumento del Módulo 5 aplicado al propio verificador: **una regla escrita en un comentario es una petición**. Bajarla a código sería que `leer()` no estuviera disponible para leer controladores, y eso es trabajo pendiente.
+
 ---
 
 # Al abrir el Módulo 5
