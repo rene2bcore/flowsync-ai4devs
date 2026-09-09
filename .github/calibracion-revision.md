@@ -151,4 +151,5 @@ Lo que no está probado y conviene no dar por hecho:
 
 - **Que el informe llegue al PR del curso.** Aquí se publicó en un PR del fork. En `LIDR-academy` el token de nuestro repositorio no puede comentar, y el informe cae al resumen del job.
 - **Que un token caducado se vea en rojo.** La asimetría está escrita y no se ha provocado.
+- **Que la puerta acierte al decir «no hay nada que revisar».** Estuvo diciéndolo siempre, y era mentira: [H-27](../docs/hallazgos.md). Arreglado el 2026-09-09 y **todavía sin ver una revisión disparada por `push`**.
 - **Cuántos de sus hallazgos acaban en código**, que es la métrica de este fichero. Lleva uno de uno, y era plantado.

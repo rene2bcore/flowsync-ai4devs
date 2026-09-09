@@ -19,7 +19,7 @@
 | **Rama** | `feat/login-frontend` | `docs/alcance-mvp` | `s3/start` | `s4/start` | `feat/sesion-5-guardarrailes` |
 | **PR** | [#12](https://github.com/LIDR-academy/flowsync-ai4devs/pull/12) | [#14](https://github.com/LIDR-academy/flowsync-ai4devs/pull/14) | [#15](https://github.com/LIDR-academy/flowsync-ai4devs/pull/15) | [#21](https://github.com/LIDR-academy/flowsync-ai4devs/pull/21) | [#26](https://github.com/LIDR-academy/flowsync-ai4devs/pull/26) |
 | **Funcionalidad nueva** | Cuentas en pantalla | **Ninguna** | Tareas, entero | **Ninguna** | **Ninguna** |
-| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 a H-26**, y nueve que volvieron |
+| **Hallazgos** | - | **H-01 a H-10** | H-11 a H-14 | **H-15 a H-22** | **H-23 a H-27**, y nueve que volvieron |
 
 ### Cómo cambió el proyecto, medido
 
@@ -43,7 +43,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 
 **Ese salto es el mecanismo que produjo H-22 y los nueve defectos que volvieron.** No es una anomalía del curso: es la forma que tiene este proyecto de enseñar que un arreglo vive en una rama, no en el producto.
 
-**Diecisiete de los veintiséis hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
+**Diecisiete de los veintisiete hallazgos salieron de los dos módulos que no añadieron funcionalidad.** Mirar encuentra más que construir, y eso es lo que dice este recorrido leído de arriba abajo.
 
 ---
 
@@ -335,7 +335,7 @@ Con eso, **R-03 es la primera regla del repositorio que recorre el camino entero
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
 | Revisor adversarial en CI | escrito, nunca ejecutado | **visto morder** sobre un defecto plantado |
-| Hallazgos | H-23 abierto | **H-23 cerrado**, y tres nuevos: H-24, H-25 y H-26 |
+| Hallazgos | H-23 abierto | **H-23 cerrado**, y cuatro nuevos: H-24 a H-27 |
 
 **Hallazgos del prework: uno nuevo, y nueve que volvieron.**
 

@@ -95,8 +95,19 @@ jobs:
           duenio="${GITHUB_REPOSITORY%%/*}"
           upstream="LIDR-academy/flowsync-ai4devs"
 
-          pr=$(gh pr list --repo "$upstream" --head "$duenio:$rama" \
-                 --state open --json number,baseRefName --limit 1)
+          # `gh pr list --head` espera **solo el nombre de la rama**. Pasarle
+          # `duenio:rama` -que es la forma de la API REST- devuelve siempre `[]`,
+          # y esta puerta se omitía en verde en cada push sin revisar nada.
+          # Estuvo así desde que se escribió el job hasta el 2026-09-09, y es
+          # H-27: un guardarraíl que informa de que no hay nada que hacer cuando
+          # lo que ocurre es que no ha mirado.
+          #
+          # El filtro por dueño se aplica después, para no confundir una rama del
+          # mismo nombre en otro fork con la nuestra.
+          pr=$(gh pr list --repo "$upstream" --head "$rama" --state open \
+                 --json number,baseRefName,headRepositoryOwner --limit 20 \
+               | jq --arg duenio "$duenio" \
+                   '[.[] | select(.headRepositoryOwner.login == $duenio)]')
 
           if [ "$(echo "$pr" | jq 'length')" -eq 0 ]; then
             echo "la rama \`$rama\` no tiene PR abierto: no hay cambio propuesto que revisar" \

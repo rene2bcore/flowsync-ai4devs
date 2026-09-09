@@ -752,6 +752,35 @@ async buildDocument() {
 
 **Qué lo vigila**: una comprobación del verificador que exige `name` + `in` únicos por operación en el fichero versionado. No mira la URL -eso exigiría levantar el servidor en CI-, pero sí ataja el caso en que alguien genere el fichero desde un proceso ya calentado. Vista fallar duplicando el `id` de `GET /tasks/:id` a mano.
 
+## H-27 · La puerta del revisor buscaba el PR con una consulta que nunca encuentra nada
+
+**Rama: `feat/portar-cierres-modulo-4` en adelante. Severidad: alta.** **Cerrado** el 2026-09-09.
+
+El job del revisor dispara en `push` y, antes de gastar nada, comprueba que la rama tenga un pull request abierto arriba. Esa comprobación era:
+
+```bash
+gh pr list --repo "$upstream" --head "$duenio:$rama" --state open --json number --limit 1
+```
+
+**`gh pr list --head` espera solo el nombre de la rama.** El prefijo `duenio:` es la forma de la API REST, no la del CLI, y con él la consulta **devuelve siempre `[]`**.
+
+**Cómo se verificó**, con la rama y el PR que existían en ese momento:
+
+```
+--head "rene2bcore:feat/sesion-5-guardarrailes"  ->  []
+--head "feat/sesion-5-guardarrailes"             ->  [{"baseRefName":"s5/start","number":26}]
+```
+
+**Consecuencia**: el job se omitía **en verde** en cada push, escribiendo en el resumen «la rama no tiene PR abierto: no hay cambio propuesto que revisar». Un mensaje correcto en su forma y falso en su contenido: no es que no hubiera nada que revisar, es que no había mirado.
+
+**Cuánto duró**: desde que se escribió el job. Las únicas revisiones que llegaron a ejecutarse fueron las del evento `pull_request`, y por eso la prueba del defecto plantado sí funcionó -era un PR recién abierto- mientras que todos los `push` posteriores decían que no había nada.
+
+**Por qué no se notó antes**: porque hasta el 2026-09-09 no había credencial, así que la puerta salía por la primera rama -«sin credencial: se omite»- y nunca llegaba a la consulta. **Dos fallos apilados, y el de arriba escondía al de abajo.** Al arreglar el primero apareció el segundo, con el mismo síntoma verde.
+
+**Arreglo**: consultar por `--head "$rama"` y filtrar después por `headRepositoryOwner.login`, que además evita confundir una rama del mismo nombre en otro fork.
+
+**Lo que enseña, y es lo mismo que [H-24](#h-24--la-verificación-nunca-ha-corrido-en-el-repositorio-donde-vive-el-pr) por tercera vez**: un guardarraíl que puede decir «no hay nada que hacer» necesita que alguien compruebe que esa frase es cierta. Un verde por omisión y un verde por revisión sin hallazgos se ven idénticos desde fuera.
+
 ---
 
 # Al abrir el Módulo 5
