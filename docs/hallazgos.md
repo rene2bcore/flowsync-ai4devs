@@ -948,6 +948,31 @@ Resultado: **seis historias implementadas y probadas seguían en «Tareas por ha
 
 **Por qué no se puede bajar a un guardarraíl**, y conviene decirlo en vez de prometerlo: haría falta que algo supiera qué historia corresponde a qué código, y eso solo lo sabe una persona. Va donde va lo que no se puede comprobar: a la conversación, con la ventaja de que ahora hay un documento -`alcance-funcional.md`- contra el que contrastarlo en diez minutos.
 
+## H-34 · Una decisión de producto declarada pendiente se resolvió en el código, y nadie la escribió
+
+**Rama: `s3/start` en adelante. Severidad: media.** **Cerrado el 2026-09-09**, al registrarla.
+
+`docs/backlog/E2-gestion-tareas/us-filtrar-por-estado.md` declara, en el ticket FS-142.1 y con un aviso en negrita:
+
+> **⚠️ Decisión de producto pendiente antes de empezar:** CA-9 exige poder llegar con un estado pedido desde fuera de la interfaz, lo que implica un filtro direccionable; CA-17 exige que recargar devuelva a la vista por defecto. **Tal y como están escritas son incompatibles.** Cuesta una conversación y decide qué se construye.
+
+**Esa conversación no ocurrió.** El filtro se implementó con `useSearchParams`, y con eso quedó decidido.
+
+**Lo que salió, comprobado en el navegador el 2026-09-09:**
+
+| Criterio | Qué hace hoy |
+|---|---|
+| **CA-9** · llegar con un estado desde fuera | `/tasks?status=done` aplica el filtro. **Cumplido** |
+| **CA-17** · no quedarse pegado | Volver a `/tasks` da la vista por defecto, y `localStorage` no guarda ninguna clave de filtro. **Cumplido en lo que el criterio protege** |
+
+**Salió bien, y no por casualidad del todo**: la URL resuelve la incompatibilidad en vez de elegir un lado, porque hace el filtro direccionable **sin** hacerlo persistente. El único borde es recargar la misma pestaña con el parámetro puesto, y eso no es que se quede pegado: es CA-9 funcionando.
+
+**Por qué se registra igual.** Que una decisión salga bien no la convierte en una decisión tomada. El backlog decía «antes de empezar» y se empezó; decía «cuesta una conversación» y no la hubo. La siguiente vez que dos criterios se contradigan, lo que decida no será el criterio de nadie sino la primera implementación que compile.
+
+**Y hay un segundo hallazgo dentro, sobre el tablero**: LID-12 a LID-16 son una descomposición que **solo existió en Jira**. La historia dice que sale con **un solo ticket**, FS-142.1, y que no hay ticket de frontend en ese alcance. Cinco subtareas siguiéndole la pista a un trabajo que el repositorio nunca declaró así. Es el hermano de [H-33](#h-33--el-tablero-de-jira-llevaba-dieciséis-días-contradiciendo-al-repositorio): allí el tablero iba por detrás, aquí iba por su cuenta.
+
+**Qué lo vigilaría**: nada automático. Va con [R-13](auditoria-reglas-de-proceso.md) y con H-33 a la tercera categoría, la de lo que no se puede comprobar. Lo único que se puede hacer es lo que se ha hecho: dejar escrito en el propio criterio qué se decidió y cuándo, para que la próxima vez se lea antes de construir.
+
 ---
 
 # Al abrir el Módulo 5

@@ -171,3 +171,9 @@ Esta historia es **deliberadamente ligera** y sale con **un solo ticket**. No ha
 **Nota de riesgo:** es aquí donde se pierde la distinción entre *filtro inválido* y *filtro sin resultados*. Si se juntan en este ticket, ya no se recuperan más arriba: una lista vacía se leerá como «no hay nada pendiente» cuando la verdad es «lo que has pedido no existe».
 
 **⚠️ Decisión de producto pendiente antes de empezar:** CA-9 exige poder llegar con un estado pedido desde fuera de la interfaz, lo que implica un filtro direccionable; CA-17 exige que recargar devuelva a la vista por defecto. **Tal y como están escritas son incompatibles.** Cuesta una conversación y decide qué se construye.
+
+> **Resuelta, y la conversación nunca ocurrió.** Se implementó con `useSearchParams` en el Módulo 3 y con eso quedó decidido; se anota aquí el 2026-09-09, al cerrar LID-16, seis semanas después.
+>
+> **Lo que hace hoy**, comprobado en el navegador: `/tasks?status=done` aplica el filtro -CA-9-, y volver a entrar en `/tasks` da la vista por defecto sin que `localStorage` guarde nada -CA-17 en lo que el criterio protege-. La URL resuelve la incompatibilidad en vez de elegir un lado: hace el filtro **direccionable sin hacerlo persistente**. El único borde es recargar la misma pestaña con el parámetro puesto, y eso es CA-9 funcionando, no el filtro quedándose pegado.
+>
+> **Que saliera bien no la convierte en una decisión tomada.** Es [H-34](../../hallazgos.md), y queda escrito aquí para que la próxima vez que dos criterios se contradigan se lea antes de construir, no después.
