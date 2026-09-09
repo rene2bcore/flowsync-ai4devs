@@ -874,6 +874,50 @@ De **8.607 a 4.966 líneas**, en 46 ficheros. Sigue sin saberse dónde está el 
 
 **Lo que queda por decidir, y es de proceso**: la unidad de trabajo. Un PR por módulo produce diffs de este tamaño cuando la base no avanza. Las opciones son revisar por commit, revisar solo lo que cambia desde la última revisión, o partir la unidad. Ninguna es gratis y esto no es el sitio para elegir: va a la conversación que la auditoría ya declara pendiente para R-01 y R-03.
 
+## H-31 · El change archivado que las decisiones citaban no cruzó de rama
+
+**Rama: `s4/start` en adelante. Severidad: baja.** **Cerrado** el 2026-09-09.
+
+Tres comentarios del código citaban decisiones de un documento que en esta rama no existía:
+
+| Fichero | Cita |
+|---|---|
+| `backend/app/validators/user.ts:5` | «Solo se baja a minúsculas (design.md D2)» |
+| `backend/app/validators/user.ts:38` | «en lugar de un "ese email ya está registrado" (design.md D1)» |
+| `backend/database/migrations/1787726814926_normalize_user_emails.ts:5` | «Normaliza los emails ya guardados (design.md D3)» |
+
+Lo señaló el revisor adversarial en CI. `openspec/changes/archive/` solo tenía los tres changes de tareas.
+
+**No eran citas inventadas.** El documento existe: lo creó `6fbdde8` como `openspec/changes/archive/2026-08-26-fix-defectos-abiertos/design.md`, con D1, D2, D3, D4 y D5 exactamente donde el código dice. **Lo que pasó es que el change no cruzó el salto de rama**, y las citas sí.
+
+Es [H-22](#h-22--la-tabla-lo-que-se-arrastra-dio-por-cerrados-tres-hallazgos-sin-comprobarlos-en-la-rama) otra vez, en su forma más barata: **la referencia sobrevive al salto y su destino no**. Un lector que buscara `design.md` concluiría que el comentario miente, cuando lo que falta es el fichero.
+
+**Arreglo**: traer el change archivado entero desde `6fbdde8`. Es de la regla de arrastre, no de la de comentarios.
+
+**Y de paso resolvió el hallazgo siguiente**: D4 de ese mismo documento es la decisión que gobierna H-32.
+
+## H-32 · La regla del 401 estaba escrita en dos sitios
+
+**Rama: `feat/portar-cierres-modulo-4` en adelante. Severidad: baja.** **Cerrado** el 2026-09-09.
+
+En `frontend/src/auth/auth-provider.tsx`, un 401 durante la rehidratación inicial disparaba **dos manejadores**: el `.catch()` local del arranque y la suscripción `onUnauthorized`, porque `getProfile` no silencia el rechazo -a diferencia de `logout`, que sí lo hace con `silenciarRechazo: true`-.
+
+**No era un defecto observable**: `clearSession()` es idempotente y los dos ponían el mismo mensaje. Lo señaló el revisor adversarial en CI, y bajo la calibración es **menor**, correctamente.
+
+**Por qué se arregla igual**: porque la misma regla escrita en dos sitios es como las dos copias acaban divergiendo. Y esa regla ya tenía dueño declarado en **D4** del change que H-31 acaba de recuperar: «se engancha al único punto por el que pasan todas las respuestas, y no a cada pantalla».
+
+**Arreglo**: el arranque devuelve el control ante un 401 y deja que `onUnauthorized` lo cierre. Se queda solo con lo que **sí** es propio del arranque, que también lo dice D4: **un fallo que no sea 401 no debe cerrar la sesión**.
+
+**Cómo se verificó**, en el navegador y en las dos direcciones, porque la rama conservada era la que podía romperse:
+
+| Escenario | Resultado |
+|---|---|
+| Token muerto en `localStorage`, recarga | `/login`, «Tu sesión ha caducado», y el token **borrado** |
+| Backend parado, recarga con token bueno | `/login`, «No se pudo conectar con el servidor», y el token **sobrevive** |
+| Backend de vuelta, recarga | Sesión restaurada en `/tasks` **sin volver a teclear credenciales** |
+
+El tercero es el que justifica que la segunda rama exista: sin ella, un corte de red pasajero habría cerrado la sesión.
+
 ---
 
 # Al abrir el Módulo 5

@@ -57,17 +57,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch((error: unknown) => {
         if (cancelled) return
 
-        if (error instanceof ApiError && error.status === 401) {
-          // El backend ha rechazado el token: ya no sirve para nada.
-          clearSession()
-        } else {
-          // Backend caído o error del servidor. El token puede seguir siendo
-          // bueno, así que se conserva y bastará con recargar cuando vuelva;
-          // borrarlo aquí cerraría la sesión por un corte de red pasajero.
-          setToken(null)
-          setUser(null)
-          setStatus('anonymous')
-        }
+        // Un 401 aquí ya lo ha cerrado `onUnauthorized`, que desde H-13 es el
+        // dueño único de «una credencial rechazada cierra la sesión» y corre
+        // antes de que esta promesa se rechace. Repetirlo aquí no rompía nada
+        // -`clearSession` es idempotente y el mensaje era el mismo- pero dejaba
+        // la misma regla escrita en dos sitios, que es como las dos copias
+        // acaban divergiendo. Lo señaló el revisor adversarial en CI.
+        if (error instanceof ApiError && error.status === 401) return
+
+        // Lo que sí es propio del arranque, y por eso se queda: **un fallo que
+        // no sea 401 no debe cerrar la sesión**. Backend caído o error del
+        // servidor dejan el token intacto, porque puede seguir siendo bueno y
+        // basta con recargar cuando vuelva. Es la D4 del change
+        // `2026-08-26-fix-defectos-abiertos`.
+        setToken(null)
+        setUser(null)
+        setStatus('anonymous')
 
         setSessionError(
           error instanceof ApiError
