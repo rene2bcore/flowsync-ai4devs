@@ -222,8 +222,18 @@ jobs:
           #
           # `bypassPermissions` se mantiene para que nada se quede esperando una
           # confirmación que en CI no va a llegar nadie a dar.
+          #
+          # **La lista de negación está acoplada a la versión fijada del CLI.**
+          # La primera ejecución real, el 2026-09-09, murió con
+          # `Permission deny rule "SlashCommand" matches no known tool`: esta
+          # versión no conoce esa herramienta y **aborta la ejecución entera**
+          # en vez de ignorar la regla. Es H-28.
+          #
+          # Fallar así es lo correcto -una negación que no se aplica es peor que
+          # ninguna-, pero significa que mover la versión fijada obliga a revisar
+          # esta lista en las dos direcciones.
           if ! claude -p "$(cat /tmp/prompt.md)" \
-            --disallowed-tools "Bash,Write,Edit,NotebookEdit,WebFetch,WebSearch,Task,SlashCommand" \
+            --disallowed-tools "Bash,Write,Edit,NotebookEdit,WebFetch,WebSearch,Task" \
             --allowed-tools "Read,Grep,Glob" \
             --permission-mode bypassPermissions \
             --max-turns 40 \

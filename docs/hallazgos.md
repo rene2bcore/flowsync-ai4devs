@@ -781,6 +781,34 @@ gh pr list --repo "$upstream" --head "$duenio:$rama" --state open --json number 
 
 **Lo que enseña, y es lo mismo que [H-24](#h-24--la-verificación-nunca-ha-corrido-en-el-repositorio-donde-vive-el-pr) por tercera vez**: un guardarraíl que puede decir «no hay nada que hacer» necesita que alguien compruebe que esa frase es cierta. Un verde por omisión y un verde por revisión sin hallazgos se ven idénticos desde fuera.
 
+## H-28 · La lista de negación del revisor nombraba una herramienta que su versión no conoce
+
+**Rama: `feat/portar-cierres-modulo-4` en adelante. Severidad: media.** **Cerrado** el 2026-09-09.
+
+La primera ejecución real del revisor en CI -la primera de verdad, después de arreglar [H-27](#h-27--la-puerta-del-revisor-buscaba-el-pr-con-una-consulta-que-nunca-encuentra-nada)- **murió**:
+
+```
+Permission deny rule "SlashCommand" matches no known tool — check for typos.
+```
+
+`--disallowed-tools` incluía `SlashCommand`. La versión fijada del CLI no conoce esa herramienta y **aborta la ejecución entera** en vez de ignorar la regla.
+
+**Fallar así es lo correcto**, y conviene decirlo: una regla de negación que no se aplica es peor que no tenerla, porque quien la escribió cree que está protegido. Abortar es la respuesta honesta.
+
+**Lo que sí revela es un acoplamiento que no habíamos visto**: la versión del CLI está fijada a propósito -corre en el mismo entorno que la credencial, [ver la calibración](../.github/calibracion-revision.md)-, y ese pin **también fija el vocabulario de herramientas**. Mover la versión obliga a revisar la lista de negación en las dos direcciones: hacia arriba puede aparecer una herramienta nueva que habría que negar, hacia abajo puede desaparecer una que se nombra.
+
+**Arreglo**: quitar `SlashCommand`. Las siete que quedan -`Bash`, `Write`, `Edit`, `NotebookEdit`, `WebFetch`, `WebSearch`, `Task`- sí las reconoce.
+
+**Y el orden en que aparecieron los tres fallos es la parte que enseña.** Estaban apilados, cada uno tapando al siguiente:
+
+| | Fallo | Lo tapaba |
+|---|---|---|
+| 1 | Sin credencial: el job se omitía en verde | — |
+| 2 | [H-27](#h-27--la-puerta-del-revisor-buscaba-el-pr-con-una-consulta-que-nunca-encuentra-nada): la puerta nunca encontraba el PR | El 1, que salía antes |
+| 3 | **H-28**: la lista de negación abortaba | El 2, que nunca llegaba a ejecutar |
+
+Tres arreglos para que un guardarraíl se ejecutara una vez, y **los dos primeros salían en verde**. Es el argumento entero del Módulo 5 en una sola pieza de infraestructura.
+
 ---
 
 # Al abrir el Módulo 5
