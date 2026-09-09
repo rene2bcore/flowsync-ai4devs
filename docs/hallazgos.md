@@ -676,7 +676,9 @@ Dos cosas quedaron documentadas **como son y no como deberían ser**, que es lo 
 
 Es H-22 otra vez, y esta vez sobre la única fila que se había atrevido a decir «se cumple», en el documento escrito para advertir contra exactamente eso.
 
-**Mitigación, comprobada el 2026-09-08.** Abrir el cambio también como **pull request dentro del fork** (`rene2bcore#1`, `feat/sesion-5-guardarrailes` → `s5/start`). Ahí el evento `pull_request` sí dispara, con secretos, y los checks aparecen en el PR.
+**Mitigación, comprobada el 2026-09-08.** Abrir el cambio también como **pull request dentro del fork** (`rene2bcore#1`). Ahí el evento `pull_request` sí dispara, con secretos, y los checks aparecen en el PR.
+
+> **Retirada el 2026-09-09, por redundante.** `verificacion.yml` dispara en `push` a cualquier rama, así que las tres comprobaciones ya corrían en cada empujón sin necesidad de ese PR; y desde que [H-27](#h-27--la-puerta-del-revisor-buscaba-el-pr-con-una-consulta-que-nunca-encuentra-nada) está arreglado, el revisor también. El módulo pide **un solo PR**, así que el segundo se cerró. Lo que la mitigación demostró -que el evento corre y muerde- sigue en pie y está en las dos ejecuciones que quedaron registradas.
 
 Se comprobó en las dos direcciones, que es lo que la hace contar:
 

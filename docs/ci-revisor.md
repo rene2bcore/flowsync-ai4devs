@@ -14,7 +14,8 @@
 | **Calibración** | [`REVIEW.md`](../REVIEW.md), en la raíz. Una pantalla |
 | **El porqué de cada decisión** | [`.github/calibracion-revision.md`](../.github/calibracion-revision.md). **No se inyecta** |
 | **Herramientas** | `Read`, `Grep`, `Glob`. Todo lo que escribe o sale a la red va negado explícitamente |
-| **Topes** | `--max-turns 40` |
+| **Modelo** | `--model sonnet --effort medium`. Las dos palancas de coste, con los valores que pide el módulo |
+| **Topes** | `--max-turns 40` turnos del modelo y `timeout-minutes: 10` de reloj del runner. **Son dos cosas distintas**: el primero no impide que el job se cuelgue |
 | **Bloquea** | **No.** Lo determinista bloquea; el revisor informa |
 
 El diff se calcula en el runner y se le entrega **ya escrito en un fichero**, así que el revisor no necesita shell para verlo. Es la defensa que sigue en pie aunque falle cualquier otra.
@@ -93,6 +94,20 @@ Dos partidas, y solo la segunda es nueva: **minutos de máquina** y **consumo de
 `concurrency` cancela la revisión anterior cuando llega un push nuevo, y la puerta sale antes de gastar nada si la rama no tiene PR. Con la suscripción, el presupuesto deja de ser dinero y pasa a ser **atención propia**: cada revisión inútil se paga en cuota que ibas a usar tú.
 
 Precios oficiales en [claude.com/pricing](https://claude.com/pricing). No se copian cifras aquí: envejecen sin que nadie se entere.
+
+## Dónde nos separamos del prompt del módulo, y por qué
+
+El módulo pide construir el revisor **con la acción oficial** `anthropics/claude-code-action`. Aquí se usa el CLI `claude -p` en un paso propio. Es la única desviación de fondo y no es preferencia:
+
+| Lo que pide el módulo | Lo que hicimos | Motivo |
+|---|---|---|
+| Acción oficial | `claude -p` en un `run` | La acción exige que el PR viva donde está instalada la GitHub App. El nuestro vive en `LIDR-academy`, donde no somos administradores |
+| Disparar en `pull_request` | Disparar también en `push` + buscar el PR arriba | Un `pull_request` desde un fork no recibe secretos, y en el repositorio del curso el workflow ni siquiera corre: [H-24](hallazgos.md) |
+| Publicar los hallazgos como comentarios | Se intenta, y si el PR vive en otro repositorio cae al resumen del job | El token de nuestro repositorio no puede comentar allí |
+
+**El propio material del módulo anticipa la causa**: «en un repositorio público, un cambio propuesto desde un fork no recibe los secretos... tu revisor no va a correr sobre tu propio cambio propuesto. No está roto: está funcionando como debe.» Lo que hicimos es tomar esa consecuencia y buscarle una vuelta -el disparador `push`- en vez de dejar el guardarraíl presente e inerte.
+
+Todo lo demás va con los valores exactos que pide: `--model sonnet`, `--effort medium`, `--max-turns 40`, `timeout-minutes: 10`, herramientas de lectura, y la credencial desde un secreto.
 
 ## Lo que el directo propone y aquí queda como propuesta
 

@@ -43,6 +43,11 @@ jobs:
   revisar:
     name: El revisor busca lo que la build no ve
     runs-on: ubuntu-latest
+    # Sin esto, una ejecución colgada consume minutos toda la noche. Faltaba
+    # hasta el 2026-09-09: el `--max-turns` acota los turnos del modelo y no el
+    # reloj del runner, que son dos cosas distintas. Lo pedía el prompt del
+    # módulo con este valor exacto.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -266,7 +271,12 @@ jobs:
           # Fallar así es lo correcto -una negación que no se aplica es peor que
           # ninguna-, pero significa que mover la versión fijada obliga a revisar
           # esta lista en las dos direcciones.
-          if ! claude -p "$(cat /tmp/prompt.md)" \
+          # `--model sonnet` y `--effort medium` son las dos palancas de coste, y
+          # el módulo las pide con estos valores exactos. Sin ellas el job
+          # heredaba el modelo por defecto, que es más caro y más lento sin que
+          # nadie lo hubiera decidido. Los dos flags existen en la versión fijada
+          # arriba; comprobado antes de escribirlos, por H-28.
+          if ! claude -p "$(cat /tmp/prompt.md)"             --model sonnet             --effort medium \
             --disallowed-tools "Bash,Write,Edit,NotebookEdit,WebFetch,WebSearch,Task" \
             --allowed-tools "Read,Grep,Glob" \
             --permission-mode bypassPermissions \
