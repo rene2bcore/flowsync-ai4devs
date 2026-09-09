@@ -173,9 +173,34 @@ jobs:
 
           # El diff se calcula AQUÍ y se le entrega ya escrito. El revisor no
           # necesita ejecutar nada para verlo, y por eso puede correr sin Bash.
-          git diff "$BASE...HEAD" --stat > /tmp/cambio.txt
+          # Se excluyen tres cosas, y **ninguna es porque estorbe**: son las que
+          # `REVIEW.md` ya declara fuera de revisión, así que pagarle al modelo
+          # por leerlas es gasto puro. Cada fichero que lee consume turnos del
+          # tope de 40.
+          #
+          # - `backend/.adonisjs/` es código generado.
+          # - `docs/artefactos/*.html` es la versión navegable de los `.md` que
+          #   ya van en el diff: leerla es leer lo mismo dos veces.
+          # - `package-lock.json` no es prosa revisable.
+          #
+          # `docs/api/openapi.json` **sí va**, aunque se genere: es el contrato,
+          # y ahí vivía H-25.
+          EXCLUIR=(':(exclude)backend/.adonisjs'
+                   ':(exclude)docs/artefactos/*.html'
+                   ':(exclude)**/package-lock.json')
+
+          git diff "$BASE...HEAD" --stat -- . "${EXCLUIR[@]}" > /tmp/cambio.txt
           echo >> /tmp/cambio.txt
-          git diff "$BASE...HEAD" >> /tmp/cambio.txt
+          git diff "$BASE...HEAD" -- . "${EXCLUIR[@]}" >> /tmp/cambio.txt
+
+          # Si el cambio es demasiado grande, el revisor agota los turnos leyendo
+          # y muere sin informe. La calibración ya dice que entonces el problema
+          # es el tamaño del diff y no el tope, así que se avisa aquí en vez de
+          # descubrirlo en un `Reached max turns`.
+          lineas=$(wc -l < /tmp/cambio.txt)
+          if [ "$lineas" -gt 6000 ]; then
+            echo "aviso: el diff tiene $lineas lineas. Por encima de ~6000 el revisor"               "suele agotar los 40 turnos leyendo y morir sin informe (H-30)."               >> "$GITHUB_STEP_SUMMARY"
+          fi
 
           {
             echo "$instrucciones"

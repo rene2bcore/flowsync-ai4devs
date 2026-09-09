@@ -836,6 +836,32 @@ después:            FALLA sin 404 declarado: tasks_controller.ts
 
 Es el argumento del Módulo 5 aplicado al propio verificador: **una regla escrita en un comentario es una petición**. Bajarla a código sería que `leer()` no estuviera disponible para leer controladores, y eso es trabajo pendiente.
 
+## H-30 · El PR es demasiado grande para una sola revisión
+
+**Rama: `feat/sesion-5-guardarrailes`. Severidad: media.** Abierto. Es un hallazgo sobre **nuestro proceso**, no sobre el revisor.
+
+Tras arreglar [H-27](#h-27--la-puerta-del-revisor-buscaba-el-pr-con-una-consulta-que-nunca-encuentra-nada) y [H-28](#h-28--la-lista-de-negación-del-revisor-nombraba-una-herramienta-que-su-versión-no-conoce), y después de una ejecución completa que produjo [H-29](#h-29--dos-comprobaciones-del-verificador-se-satisfacían-con-un-comentario), la siguiente murió:
+
+```
+Error: Reached max turns (40)
+```
+
+El diff de la rama contra `upstream/s5/start` son **10.049 líneas en 75 ficheros**. El revisor las lee con `Read` y agota el tope antes de terminar.
+
+**Lo que dice nuestra propia calibración**, escrita antes de que ocurriera:
+
+> «`--max-turns 40` es el tope duro. Si una revisión lo agota, el problema es el tamaño del diff, no el tope.»
+
+Así que **no se sube el tope**. Lo que hay es un PR que apila el port del Módulo 4 y la sesión entera del 5 porque la base nunca se fusiona.
+
+**Mitigación aplicada**: se excluyen del diff tres cosas que `REVIEW.md` ya declara fuera de revisión, porque pagarle al modelo por leerlas es gasto puro -`backend/.adonisjs/`, los `.html` de `docs/artefactos/` que duplican los `.md` del mismo diff, y los `package-lock.json`-. Baja de 10.049 a **8.541 líneas**, que ayuda y no basta.
+
+`docs/api/openapi.json` **no se excluye** aunque se genere: es el contrato, y ahí vivía [H-25](#h-25--el-contrato-versionado-declaraba-públicas-dos-rutas-protegidas).
+
+**Y se añade un aviso** en el resumen del job por encima de 6.000 líneas, para que la próxima vez se sepa antes de gastar cuatro minutos y una cuota.
+
+**Lo que queda por decidir, y es de proceso**: la unidad de trabajo. Un PR por módulo produce diffs de este tamaño cuando la base no avanza. Las opciones son revisar por commit, revisar solo lo que cambia desde la última revisión, o partir la unidad. Ninguna es gratis y esto no es el sitio para elegir: va a la conversación que la auditoría ya declara pendiente para R-01 y R-03.
+
 ---
 
 # Al abrir el Módulo 5
