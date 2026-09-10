@@ -31,7 +31,7 @@ Tres piezas, y ninguna sustituye a las otras:
 
 1. **`npm run openapi:generate`** escribe `docs/api/openapi.json` desde el documento que construye `@foadonis/openapi`. Es manual, a propósito.
 2. **`npm run openapi:check`** compara el fichero contra el documento generado y **sale con código distinto de cero** si difieren, nombrando las rutas JSON. **No arregla nada.**
-3. **`scripts/verificar-docs.mjs` gana una comprobación**, y ahora sí abre `docs/api/openapi.json`: son diecisiete.
+3. **`scripts/verificar-docs.mjs` gana una comprobación**, y ahora sí abre `docs/api/openapi.json`: son dieciocho.
 
 La separación entre la 2 y la 3 es el fondo de esta decisión. **Un generador no puede afirmar lo que la 3 afirma.** Ninguno de los tres defectos del Módulo 4 se habría notado en un OpenAPI generado: habría documentado fielmente que el filtro acepta cualquier cadena. Por eso el contraste no se retira; se le quita el trabajo que un generador hace mejor -la forma de las rutas- y se le deja el que solo él puede hacer: que la regla de vencimiento tenga sus tres condiciones, que la comparación sea estricta, que el responsable no exponga la cuenta.
 
@@ -81,6 +81,8 @@ Al tocar rutas, controladores o transformers hay que **acordarse de `npm run ope
 
 **[H-23](../hallazgos.md) quedó cerrado el 2026-09-09**, y versionar el contrato es lo que lo hizo barato: con las cuatro rutas de `auth` visibles en un fichero con `responses: {}`, decorarlas dejó de ser una tarea abstracta. Las nueve rutas declaran hoy sus respuestas y su 500.
 
-Queda abierto **[H-26](../hallazgos.md)**, y esta decisión es lo que lo hace soportable: el documento que sirve `/api.json` acumula un parámetro duplicado en cada petición, así que **la URL no es el contrato**. El fichero versionado sí, y es el que se integra y el que se revisa. La decisión se tomó para hacer la deriva visible en un diff; que también protegiera de esto no se previó.
+**[H-26](../hallazgos.md) quedó cerrado el 2026-09-09**, y mientras estuvo abierto esta decisión es lo que lo hizo soportable: el documento que servía `/api.json` acumulaba un parámetro duplicado en cada petición, así que **la URL no era el contrato**. El fichero versionado sí. Al arreglarlo -construyendo el documento una sola vez- las dos cosas pasaron a ser **byte a byte idénticas**, que es más de lo que esta decisión pedía.
+
+El arreglo se llevó por delante tres entradas del documento: `/api`, `/api.json` y `/api.yaml` ya no se documentan a sí mismas. Estaban ahí por los decoradores del controlador de la librería, y decían `responses: {default}` y `security: []`. Qué rutas existen sigue estando en la tabla de `CLAUDE.md`, contrastada contra `list:routes`.
 
 Y **[H-24](../hallazgos.md)**, que este ADR no puede resolver: en el pull request del curso el job sigue sin correr. Mitigado abriendo el cambio también como PR dentro del fork, donde sí corre.

@@ -217,6 +217,36 @@ comprobar('El contrato versionado no repite ningun parametro', () => {
   return `${revisadas} operaciones con parametros, ninguno repetido`
 })
 
+comprobar('AGENTS.md se puede leer en cualquier sistema', () => {
+  // H-08. Era un symlink a `CLAUDE.md`, modo `120000` en el indice. Un symlink
+  // solo se materializa donde el sistema lo permite: en Windows, con
+  // `core.symlinks=false`, git escribe un fichero de texto de nueve bytes cuyo
+  // contenido es la cadena `CLAUDE.md`. Quien lo abriera ahi no encontraba las
+  // instrucciones ni un aviso, sino un nombre de fichero suelto.
+  //
+  // Se comprueba el **modo en el indice**, no el fichero del disco: en la
+  // maquina donde el symlink no se materializa, leerlo no distingue un puntero
+  // escrito de un symlink roto. Los dos son texto corto que dice `CLAUDE.md`.
+  const entrada = execFileSync('git', ['ls-files', '-s', 'AGENTS.md'], {
+    cwd: RAIZ,
+    encoding: 'utf8',
+  }).trim()
+
+  if (!entrada) throw new Error('AGENTS.md no esta en el indice')
+
+  const modo = entrada.split(/\s+/)[0]
+  if (modo === '120000') {
+    throw new Error('AGENTS.md ha vuelto a ser un symlink: en Windows se lee como texto suelto (H-08)')
+  }
+
+  const contenido = leer('AGENTS.md')
+  if (!contenido.includes('CLAUDE.md')) {
+    throw new Error('AGENTS.md ya no apunta a CLAUDE.md')
+  }
+
+  return `modo ${modo}, apunta a CLAUDE.md`
+})
+
 comprobar('La regla de vencimiento comprueba sus tres condiciones', () => {
   const modelo = leerCodigo('backend/app/models/task.ts')
   const metodo = modelo.match(/isOverdueOn\(referenceDay: string\): boolean \{([\s\S]*?)\n {2}\}/)

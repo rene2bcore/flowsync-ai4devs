@@ -31,7 +31,7 @@ Cada celda es **inicio → fin** de esa sesión. Un guion significa que la sesi�
 | Ficheros de prueba, backend | 0 → 0 | - | **0 → 2** | **4 → 15** | **5 → 15** |
 | Ficheros de prueba, frontend | 0 → 0 | - | **0 → 1** | 0 → 1 | **0 → 1** |
 | Pruebas ejecutándose | 0 → 0 | - | **0 → 37 + 21** | **20 → 76 + 28** | **23 → 75 + 28** |
-| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 17** |
+| Comprobaciones del verificador | - | - | - | **0 → 17** | **0 → 18** |
 | Workflows de CI | - | - | - | **0 → 2** | **0 → 2** |
 | ADR | - | - | - | **0 → 4** | 2 → **7** |
 | Migraciones | 2 → 2 | - | **2 → 5** | 4 → **6** | 4 → **6** |
@@ -331,7 +331,7 @@ Con eso, **R-03 es la primera regla del repositorio que recorre el camino entero
 | Reglas con estado contrastado | **0 de 14** | **14 de 14** |
 | ADR | 6 | **7** |
 | Contrato versionado en un fichero | no | **sí**, con su check |
-| Comprobaciones del verificador | 15 | **17** |
+| Comprobaciones del verificador | 15 | **18** |
 | Comprobaciones que bloquean en CI | 3 jobs | **3 jobs + `openapi:check`** |
 | CI ejecutándose sobre un `pull_request` | **nunca** | **sí**, en el fork |
 | Revisor adversarial en CI | escrito, nunca ejecutado | **visto morder** sobre un defecto plantado |
@@ -364,7 +364,6 @@ Actualizado el 2026-09-09, después de cerrar la sesión.
 | | Qué | Estado |
 |---|---|---|
 | **H-03** | El cierre de sesión no envuelve en `{ data }` | Abierto **a propósito** desde el Módulo 2, y ahora **documentado como es** en el contrato |
-| **H-26** | `/api.json` acumula un parámetro duplicado en cada petición | Abierto. Es de la librería y solo afecta a desarrollo. Lo hace soportable que el contrato sea el fichero, no la URL |
 | **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las 35 ejecuciones pendientes no está en nuestra mano |
 | — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
 | — | **R-01 sigue sin bajar a un hook** | Está clasificada y contada -45 incumplimientos-, no arreglada. Tres líneas de `pre-commit` |

@@ -303,19 +303,19 @@ Con el hook activo, el fichero se quedó **exactamente así**. Si hubiera corrid
 
 ## H-08 · `AGENTS.md` es un symlink que Windows no materializa
 
-**Severidad: baja.** Sin impacto mientras se trabaje solo con Claude Code.
+**Severidad: baja.** **Cerrado el 2026-09-09.**
 
-En el repo, `AGENTS.md` tiene modo `120000`, es decir un enlace simbólico a `CLAUDE.md`.
+`AGENTS.md` estaba en el índice con modo **`120000`**, un symlink a `CLAUDE.md`. Un symlink solo se materializa donde el sistema lo permite: en Windows, con `core.symlinks=false`, git escribe un fichero de texto de **nueve bytes** cuyo contenido es la cadena `CLAUDE.md`.
 
-**Cómo se verificó**: `git ls-tree HEAD AGENTS.md` devuelve modo `120000`. En disco es un fichero normal de 9 bytes cuyo contenido es la cadena `CLAUDE.md`.
+Quien abriera `AGENTS.md` en esa máquina no encontraba las instrucciones ni un aviso de dónde están: encontraba **un nombre de fichero suelto, sin contexto**.
 
-**Causa**: el clon tiene `core.symlinks=false`, que git puso solo al detectar que Windows no permite crear enlaces sin Modo Desarrollador ni privilegios de administrador.
+**Estuvo abierto veintiséis días con la nota «sin impacto mientras se trabaje solo con Claude Code»**, que era cierta y por eso no se tocó. Deja de serlo en cuanto lo abre otra herramienta, y `AGENTS.md` existe precisamente para que lo abran otras.
 
-**Consecuencia**: Claude Code no se entera, porque lee `CLAUDE.md`. Pero cualquier herramienta que lea `AGENTS.md`, como Codex, encontraría la cadena `CLAUDE.md` y ningún contexto.
+**Arreglo**: un fichero de verdad con un puntero escrito. Funciona en los dos sistemas y **no puede desincronizarse**, porque no duplica ni una línea de las instrucciones. Es menos elegante que un symlink y es lo que se lee igual en todas partes.
 
-**Qué hacer, si hiciera falta**: activar Modo Desarrollador, `git config core.symlinks true`, y rehacer el checkout del fichero.
+**Qué lo vigila**: una comprobación del verificador que mira el **modo en el índice**, no el fichero del disco. La distinción importa: en la máquina donde el symlink no se materializa, leer el fichero no distingue un puntero escrito de un symlink roto -los dos son texto corto que dice `CLAUDE.md`-. Lo que los distingue es `git ls-files -s`.
 
----
+**Vista fallar** devolviendo el modo a `120000` con `git update-index --cacheinfo`: «AGENTS.md ha vuelto a ser un symlink: en Windows se lee como texto suelto».
 
 ## H-09 · `database/schema.ts` se regenera sin formato y rompe el lint
 
@@ -727,7 +727,7 @@ En OpenAPI eso **no** significa «no se ha dicho nada»: es la forma explícita 
 
 ## H-26 · El documento servido en `/api.json` crece en cada petición
 
-**Rama: todas las que traen `@foadonis/openapi`. Severidad: media.** Abierto. Solo afecta a desarrollo.
+**Rama: todas las que traen `@foadonis/openapi`. Severidad: media.** **Cerrado el 2026-09-09.**
 
 Cada petición a `/api.json` devuelve un documento con **un parámetro de ruta duplicado más** que la anterior.
 
@@ -761,6 +761,23 @@ async buildDocument() {
 **Y por qué importa menos de lo que parece**: por [ADR-0007](adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md). El contrato que se integra es `docs/api/openapi.json`, no la URL. La decisión de versionarlo se tomó por otro motivo -hacer la deriva visible en un diff- y resulta que también protege de esto. `/api.json` queda como conveniencia para mirar, no como fuente.
 
 **Qué lo vigila**: una comprobación del verificador que exige `name` + `in` únicos por operación en el fichero versionado. No mira la URL -eso exigiría levantar el servidor en CI-, pero sí ataja el caso en que alguien genere el fichero desde un proceso ya calentado. Vista fallar duplicando el `id` de `GET /tasks/:id` a mano.
+
+## Arreglo, 2026-09-09: el documento se construye una vez
+
+Se retira `openapi.registerRoutes()` y las tres rutas se registran en `start/routes.ts`, sirviendo un documento **construido una sola vez**. La caché no distingue entornos porque el problema tampoco: en producción el documento no cambia mientras el proceso vive, y en desarrollo el servidor se reinicia con cada cambio que lo afectaría.
+
+**Medido antes y después**, cuatro peticiones seguidas al servidor:
+
+| | Parámetro `id` en `GET /tasks/{id}` |
+|---|---|
+| Antes | 5, 6, 7 · crecía una por llamada |
+| **Después** | **1, 1, 1, 1** |
+
+**Y algo que no se buscaba**: el documento servido pasa a ser **byte a byte idéntico** al versionado. Antes difería siempre, y `openapi:check` daba verde con razón porque compara el fichero contra una construcción nueva, no contra la URL. Ahora las tres cosas dicen lo mismo.
+
+**Un cambio de contrato que conviene no dejar pasar en silencio**: las tres rutas de la propia documentación -`/api`, `/api.json`, `/api.yaml`- **salen del documento**. Estaban ahí porque el controlador de la librería lleva decoradores; los nuestros no. Aparecían con `responses: {default}` y `security: []`, es decir, sin decir nada útil sobre sí mismas. El contrato pasa de ocho rutas a ocho rutas de producto, y qué rutas existen sigue estando donde debe: en la tabla de `CLAUDE.md`, que el verificador contrasta contra `list:routes`.
+
+**Lo que este arreglo no hace**: corregir la librería. `buildDocument()` sigue acumulando si se la llama dos veces en el mismo proceso. Lo que se ha hecho es llamarla una sola vez.
 
 ## H-27 · La puerta del revisor buscaba el PR con una consulta que nunca encuentra nada
 

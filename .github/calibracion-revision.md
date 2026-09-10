@@ -10,7 +10,7 @@
 
 ## Por qué no bloquea
 
-Las comprobaciones deterministas de `verificacion.yml` -tipos, lint, 81 pruebas de backend, 28 de frontend, los diecisiete contrastes del verificador- **sí bloquean**, porque su respuesta no depende del día: o el contrato coincide con el código o no.
+Las comprobaciones deterministas de `verificacion.yml` -tipos, lint, 81 pruebas de backend, 28 de frontend, los dieciocho contrastes del verificador- **sí bloquean**, porque su respuesta no depende del día: o el contrato coincide con el código o no.
 
 Esta no. Es un modelo leyendo un diff, y se equivoca. Un revisor no determinista que tumba la build se desactiva la primera vez que se equivoca con prisa, y entonces no queda ni revisor ni build.
 
