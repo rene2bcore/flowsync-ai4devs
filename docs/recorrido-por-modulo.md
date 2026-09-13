@@ -308,7 +308,7 @@ Y lo que la comparación fichero a fichero encontró antes de portar nada: **sei
 
 Las tres demos, en orden, y cada una dejó algo que el prework no tenía.
 
-**Demo 1 · auditar las reglas contra el historial.** La columna de estado se rellenó con 61 commits y 26 ejecuciones de CI, contando casos. Salió **H-24**, y es el hallazgo del módulo: `verificacion.yml` lleva **35 ejecuciones en `action_required`** en el repositorio donde viven nuestros PR, sin haber ejecutado un solo paso. Corre solo en nuestro fork, sobre `push`, donde nadie del equipo lo mira.
+**Demo 1 · auditar las reglas contra el historial.** La columna de estado se rellenó con 61 commits y 26 ejecuciones de CI, contando casos. Salió **H-24**, y es el hallazgo del módulo: `verificacion.yml` tiene **todas sus ejecuciones en `action_required`** en el repositorio donde viven nuestros PR, sin haber ejecutado un solo paso. La cifra, con su fecha y el comando que la mide, vive solo en esa entrada. Corre solo en nuestro fork, sobre `push`, donde nadie del equipo lo mira.
 
 Eso tumbó la única fila que decía «Se cumple». Y los veredictos no salieron donde se esperaba: **R-01 no se cumple** -45 commits directos sobre ramas `sN/*`-, **R-08 se cumple 10 de 12** cuando la intuición decía `casi nunca`, y **R-10 es vacuamente cierta** porque en este repositorio no hay hooks de git.
 
@@ -364,7 +364,7 @@ Actualizado el 2026-09-09, después de cerrar la sesión.
 | | Qué | Estado |
 |---|---|---|
 | **H-03** | El cierre de sesión no envuelve en `{ data }` | Abierto **a propósito** desde el Módulo 2, y ahora **documentado como es** en el contrato |
-| **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las 35 ejecuciones pendientes no está en nuestra mano |
+| **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las ejecuciones pendientes no está en nuestra mano |
 | — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
 | — | **R-01 sigue sin bajar a un hook** | Está clasificada y contada -45 incumplimientos-, no arreglada. Tres líneas de `pre-commit` |
 

@@ -55,7 +55,7 @@ El directo usa `anthropics/claude-code-action@v1`, que publica comentarios **en 
 | El código vive en | `rene2bcore/flowsync-ai4devs` |
 | ¿Podemos instalar la GitHub App en el repo del curso? | **No.** No somos administradores |
 | ¿Recibe secretos un `pull_request` desde un fork? | **No.** Es una decisión de seguridad de GitHub |
-| ¿Corre siquiera el workflow allí? | **No.** 35 ejecuciones en `action_required`, ninguna aprobada. Es [H-24](hallazgos.md) |
+| ¿Corre siquiera el workflow allí? | **No.** Todas sus ejecuciones en `action_required`, ninguna aprobada. Es [H-24](hallazgos.md), que da la cifra con fecha y el comando que la mide |
 
 Por eso nuestro job dispara en **`push`** y busca si esa rama tiene un PR abierto arriba, en vez de esperar un evento `pull_request` que nunca llega con permisos. Es más feo y es lo que funciona.
 

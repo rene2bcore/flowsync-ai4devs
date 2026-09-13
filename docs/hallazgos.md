@@ -662,12 +662,21 @@ Dos cosas quedaron documentadas **como son y no como deberían ser**, que es lo 
 
 `verificacion.yml` dispara en `pull_request` y bloquea. Pero nuestros PR son **cross-repo**: salen de `rene2bcore` y apuntan a `LIDR-academy`, así que el workflow lo ejecuta el repositorio del curso, y allí GitHub exige que un mantenedor del repositorio base apruebe cada ejecución. Ninguna se ha aprobado.
 
-**Cómo se verificó**: 2026-09-08, `gh run list` contra los dos repositorios.
+**Cómo se verificó**: `gh run list` contra los dos repositorios, el 2026-09-08 y otra vez el 2026-09-12.
 
-| Repositorio | Evento | Ejecuciones | Resultado |
-|---|---|---:|---|
-| `LIDR-academy/flowsync-ai4devs` | `pull_request` | **35** | **`action_required`. Ninguna ha ejecutado un solo paso** |
-| `rene2bcore/flowsync-ai4devs` | `push` | 47 | 46 en verde y 1 en rojo, con los tres jobs ejecutados |
+**Este es el único sitio del repositorio que da la cifra**, y la da con fecha. Crece con cada empujón a una rama que tenga PR abierto en el curso, así que cualquier número copiado a otro documento queda desfasado en días: pasó, y otros cuatro documentos decían 35 cuando ya eran 56. Los demás apuntan aquí.
+
+```bash
+gh run list -R LIDR-academy/flowsync-ai4devs --workflow=verificacion.yml --limit 500 --json conclusion --jq 'group_by(.conclusion) | map({(.[0].conclusion): length}) | add'
+```
+
+| Repositorio | Evento | 2026-09-08 | 2026-09-12 | Resultado |
+|---|---|---:|---:|---|
+| `LIDR-academy/flowsync-ai4devs` | `pull_request` | 35 | **56** | **`action_required`. Ninguna ha ejecutado un solo paso** |
+| `rene2bcore/flowsync-ai4devs` | `push` | 47 | 69 | 67 en verde y 2 en rojo, con los tres jobs ejecutados |
+| `rene2bcore/flowsync-ai4devs` | `pull_request` | - | 19 | 17 en verde y 2 en rojo: los PR dentro del fork de la mitigación |
+
+Las 56 del curso se reparten entre tres ramas: `s4/start` (25), `feat/sesion-5-guardarrailes` (24) y `feat/portar-cierres-modulo-4` (7). Las ejecuciones en verde que el repositorio del curso sí tiene son de otros workflows y de ramas que no son nuestras.
 
 > **Estas cifras estuvieron mal, y el error es del tipo que este documento persigue.** El 2026-09-08 decían 16 y 10. Salieron de `gh run list`, que **devuelve veinte filas por defecto**: se contó una página, no los casos. Lo encontró la octava revisión adversarial y lo corrigió `--limit`.
 >
@@ -679,8 +688,8 @@ Dos cosas quedaron documentadas **como son y no como deberían ser**, que es lo 
 
 **Y lo que este hallazgo rompe.** [`auditoria-reglas-de-proceso.md`](auditoria-reglas-de-proceso.md) marcaba `R-05` como **Se cumple**, con este argumento: «su comprobación corre en CI y se la ha visto fallar, así que no hay nada que contrastar en el directo». Las dos mitades fallan:
 
-- **«Corre en CI»** es cierto solo en nuestro fork y solo sobre `push`. Sobre el PR, dieciséis veces sin correr.
-- **«Se la ha visto fallar»** es cierto **en local**, mutando a mano. **El job de CI nunca se ha puesto en rojo**: sus diez ejecuciones son verdes. Por R-14, el job -que es otra cosa que el script- todavía no cuenta.
+- **«Corre en CI»** es cierto solo en nuestro fork y solo sobre `push`. Sobre el PR, ninguna de sus ejecuciones ha corrido.
+- **«Se la ha visto fallar»** era cierto, el día que se encontró, solo **en local**, mutando a mano: **el job de CI no se había puesto en rojo nunca**. Por R-14, el job -que es otra cosa que el script- todavía no contaba. Su primer rojo es de esa misma tarde, en la mitigación de abajo.
 
 Es H-22 otra vez, y esta vez sobre la única fila que se había atrevido a decir «se cumple», en el documento escrito para advertir contra exactamente eso.
 
