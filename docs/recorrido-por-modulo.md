@@ -359,17 +359,16 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 
 ## Lo que queda abierto hoy
 
-Actualizado el 2026-09-12. H-03, que abría esta tabla desde el Módulo 2, se cerró ese día con el change `fix-logout-envelope`.
+Actualizado el 2026-09-12. Ese día salieron dos filas: H-03, que abría esta tabla desde el Módulo 2, con el change `fix-logout-envelope`, y R-01, que ya no depende de acordarse: la impide `.githooks/pre-commit`.
 
 | | Qué | Estado |
 |---|---|---|
 | **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las ejecuciones pendientes no está en nuestra mano |
 | — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
-| — | **R-01 sigue sin bajar a un hook** | Está clasificada y contada -45 incumplimientos-, no arreglada. Tres líneas de `pre-commit` |
 
 **Y dos que se cerraron aquí y conviene no dar por eternas**: el contrato tenía dos aproximaciones conviviendo y ahora tiene una, con su ADR; y el revisor adversarial pasó de «escrito y nunca visto morder» a haber encontrado un defecto real sin que nadie se lo plantara.
 
-Ninguno de los seis es deuda olvidada. **La diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender**, y la prueba de que sigue funcionando es que cuatro de los seis se descubrieron el último día, verificando que lo anterior funcionaba.
+Ninguna de las dos es deuda olvidada. **La diferencia entre un hueco conocido y una omisión es todo lo que este recorrido ha tratado de aprender.**
 
 ---
 

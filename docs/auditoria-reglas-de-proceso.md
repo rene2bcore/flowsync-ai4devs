@@ -63,7 +63,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 
 | # | Regla | Modo de fallo | Qué la ejecutaría | Estado, con evidencia |
 |---|---|---|---|---|
-| R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | Un hook de `pre-commit` que mire la rama | **No se cumple.** **45 commits nuestros** van directos sobre ramas `sN/*`: 12 en `s3/start` y 33 en `s4/start` |
+| R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | **Ejecutado desde el 2026-09-12**: `.githooks/pre-commit`, activado por el `npm install` y probado en CI por `scripts/probar-hook-rama.mjs` | **No se cumplía.** **45 commits nuestros** van directos sobre ramas `sN/*`: 12 en `s3/start` y 33 en `s4/start`. **Desde el hook no se puede incumplir sin teclear `--no-verify`**, que es R-10. Visto fallar en el clon real y con tres mutaciones del hook |
 | R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | **Se cumple.** **6 unidades de trabajo, 6 PR**: #12, #14, #15, #21, #22 y #26. Ninguna se quedó sin abrir |
 | R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple.** **8 revisiones** en local, todas con hallazgos reales, y desde el 2026-09-09 **también en CI**: con la credencial puesta, el job nombró un defecto plantado con su `fichero:línea` y el escenario roto, y encontró uno más que no estaba plantado |
 | R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **No se puede comprobar.** No hay repositorio donde mirarlo. Es la misma categoría que R-13, en pequeño |
@@ -77,7 +77,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 |---|---|---|---|---|
 | R-08 | Un bug no se cierra sin reproducirlo en E2E, y deja una prueba detrás | **Silencioso** | Nada hoy | **Se cumple casi siempre: 10 de 12.** De los commits `fix:`, diez tocan un fichero de prueba. Los dos que no: uno arregla una comprobación del verificador -su prueba es una mutación, que no es un fichero- y el otro es del Módulo 1, cuando **no había ni una prueba en el proyecto** |
 | R-09 | Al índice se va por nombre | Silencioso, auditable | El historial ya lo registra; falta quien lo lea | **Se cumple.** En 61 commits, **cero ficheros que no debían entrar**: ni `docs/plans/`, ni `docs/propuestas-rene-lopez.md`, ni `backend/.env`, ni la base de desarrollo. Los dos `chore:` de «fuera del repositorio» tocan **solo `.gitignore`**: nunca hubo que sacar nada del índice |
-| R-10 | Los hooks no se saltan | Ruidoso | El propio hook, más el historial | **Vacuamente cierta: en este repositorio no hay hooks de git.** `.git/hooks/` solo tiene los ejemplos. `--no-verify` aquí no se salta nada, así que cumplirla no cuesta nada y no demuestra nada |
+| R-10 | Los hooks no se saltan | Ruidoso | El propio hook, más el historial | **Era vacuamente cierta: no había hooks de git**, y `--no-verify` no se saltaba nada. **Desde el 2026-09-12 tiene objeto**: saltarse `.githooks/pre-commit` es la única forma de commitear en `main` o en una `sN/*`. Si se cumple, está por medir |
 | R-11 | Todo atajo se escribe como deuda técnica | **Silencioso**, y el que más decae | Nada hoy | **Se cumple, y con formato propio.** Cada atajo tiene su sitio declarado: `hallazgos.md` para los defectos, la sección «Lo que no se ha visto» de `.github/calibracion-revision.md` para el revisor, y H-18 para lo que se archivó sin ejecutar. Nada de esto lo obliga una herramienta |
 | R-12 | Un lint, test fallando o flaky se arreglan aunque no los hayas causado | **Silencioso** | CI lo ejecuta para lo que corre en CI, y nada para lo demás | **Se cumple, y por encima de lo que pide.** No solo se arreglaron rojos ajenos: se arreglaron **nueve defectos que ninguna herramienta señalaba** porque la suite estaba en verde. La parte no comprobable es la contraria: no hay forma de saber cuántos rojos se ignoraron antes de que existiera CI |
 | R-13 | La documentación desactualizada es peor que no tenerla | **No comprobable** | Nada puede. Ver abajo | **No se puede comprobar** |
@@ -89,7 +89,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 
 | # | ¿Meses sin notarse? | ¿Computable? | Qué se hace |
 |---|---|---|---|
-| R-01 · Rama por unidad de trabajo | **Sí**: 45 commits y nadie lo notó | **Sí, previniendo** | **Bajar**: hook de `pre-commit` que rechace `main` y `sN/*` |
+| R-01 · Rama por unidad de trabajo | **Sí**: 45 commits y nadie lo notó | **Sí, previniendo** | **Bajada** el 2026-09-12: hook de `pre-commit` que rechaza `main` y `sN/*`, y deja pasar un HEAD desacoplado para no romper un rebase |
 | R-02 · `/commit` y `gh pr create` | No: se nota que no hay PR | — | **Conservar arriba**. 5 de 5 |
 | R-03 · Adversarial sobre el PR | **Sí** | Su **ejecución** sí; su criterio no | **Bajada, y vista morder** el 2026-09-09. El criterio sigue siendo **conversación** |
 | R-04 · No repetir el resumen en el chat | No | No relevante | **Borrar**. No protege nada y alarga el contexto |
@@ -98,13 +98,13 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-07 · Arrastre de hallazgos entre ramas | **Sí**: costó nueve defectos | La **tabla** sí; el contraste entrada a entrada no | **Bajada a medias** ya. El resto, **conversación** |
 | R-08 · Un bug deja una prueba detrás | **Sí** | **Sí**: un commit `fix:` que no toque una prueba es detectable | **Bajar**. Es el candidato más limpio que queda |
 | R-09 · Al índice se va por nombre | Sí en teoría | Del pasado no; `.gitignore` cubre lo que importa | **Conservar arriba**. 61 de 61 |
-| R-10 · Los hooks no se saltan | — | — | **Borrar, o darle un objeto.** Hoy vigila algo que no existe |
+| R-10 · Los hooks no se saltan | — | — | **Borrar, o darle un objeto.** Desde el hook de R-01 **ya tiene objeto**; la decisión sigue pendiente |
 | R-11 · Todo atajo se escribe como deuda | **Sí**, y es el que más decae | No | **Conversación** |
 | R-12 · Lint, test fallando o flaky se arreglan | **Sí** | **Sí**: es CI | **Ya bajada**, con la misma avería que R-05 |
 | R-13 · La doc desactualizada es peor que no tenerla | — | **No puede serlo** | Tercera categoría. Ver sección 3 |
 | R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajar**. La de más valor de las tres |
 
-**Cuentas**: 4 a bajar, 2 a conservar arriba, 4 a conversación, 2 a borrar, 2 ya bajadas y averiadas.
+**Cuentas**: 4 a bajar, 2 a conservar arriba, 4 a conversación, 2 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03 y R-01 ya lo están** (2026-09-09 y 2026-09-12); quedan R-08 y R-14.
 
 ### Dónde nuestra clasificación se separa de la del directo
 

@@ -87,6 +87,12 @@ jobs:
       - name: Contrastar documentación contra código
         run: node scripts/verificar-docs.mjs
 
+      # El hook de R-01 corre en la máquina de quien commitea, y CI no puede
+      # saber si allí está activado. Lo que sí comprueba es que decide bien, y
+      # en Linux, que es donde Git ignora un hook sin bit de ejecución.
+      - name: El hook de rama rechaza main y sN/* (R-01)
+        run: node scripts/probar-hook-rama.mjs
+
       - name: Validar las specs vivas
         run: |
           # Version fijada a proposito, para que no se mueva sola bajo los
