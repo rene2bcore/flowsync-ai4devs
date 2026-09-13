@@ -162,7 +162,6 @@ La URL de la API sale de `VITE_API_URL` (ver `frontend/.env.example`); por defec
 - El commit sí es por petición: al cerrar cada una, usar la skill `/commit`.
 - Un cambio que toque rutas, controladores, validadores o transformers de una capability se cierra en el mismo commit con el contrato y el README de esa capability al día. **Sí hay fichero que generar** desde [ADR-0007](docs/adr/0007-el-contrato-se-genera-se-versiona-y-se-vigila-la-deriva.md): `npm run openapi:generate` escribe `docs/api/openapi.json`, y `openapi:check` pone la build en rojo si se olvida. Se commitea también el diff regenerado de `.adonisjs/`; el README es `docs/capabilities/<nombre>/README.md`.
 - `gh pr create` (con una descripción completa de los cambios en el cuerpo del PR) y el pase del subagente `adversarial-reviewer` sobre ese PR van **una sola vez, al terminar la unidad de trabajo**, no al cerrar cada petición. El review adversarial es lo último, antes de dar la unidad por terminada.
-- Cuando abras el PR, no repitas ese resumen en el chat: la sesión se va a perder, el PR no. Responde solo con la URL del PR.
 
 ### Calidad del cambio
 

@@ -66,7 +66,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 | R-01 | Rama nueva antes de tocar código; nunca commitear directo en `main`/`sN/*` | Silencioso | **Ejecutado desde el 2026-09-12**: `.githooks/pre-commit`, activado por el `npm install` y probado en CI por `scripts/probar-hook-rama.mjs` | **No se cumplía.** **45 commits nuestros** van directos sobre ramas `sN/*`: 12 en `s3/start` y 33 en `s4/start`. **Desde el hook no se puede incumplir sin teclear `--no-verify`**, que es R-10. Visto fallar en el clon real, con tres mutaciones del hook, y **en CI**: sin bit de ejecución, Linux ignora el hook y el paso se puso en rojo |
 | R-02 | Al cerrar la tarea, `/commit` y luego `gh pr create` con descripción completa | Ruidoso | Nada. Se nota porque no hay PR | **Se cumple.** **6 unidades de trabajo, 6 PR**: #12, #14, #15, #21, #22 y #26. Ninguna se quedó sin abrir |
 | R-03 | Pasar el `adversarial-reviewer` sobre el PR antes de darlo por terminado | **Silencioso** | Escrito, sin verificar: `.github/workflows/revision-adversarial.yml`, calibrado en `.github/calibracion-revision.md`. No bloquea a propósito | **Se cumple.** **8 revisiones** en local, todas con hallazgos reales, y desde el 2026-09-09 **también en CI**: con la credencial puesta, el job nombró un defecto plantado con su `fichero:línea` y el escenario roto, y encontró uno más que no estaba plantado |
-| R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **No se puede comprobar.** No hay repositorio donde mirarlo. Es la misma categoría que R-13, en pequeño |
+| R-04 | No repetir el resumen del PR en el chat | Ruidoso | Nada. Es de estilo | **Borrada el 2026-09-12.** No se podía comprobar -no hay repositorio donde mirarlo-, lo que protegía ya lo exige R-02 -la descripción completa vive en el PR- y el resto era estilo de respuesta que la configuración global de renelo ya pide |
 | R-05 | Un cambio en rutas, controladores o validadores cierra con el contrato al día y `verificar-docs.mjs` ejecutado | **Silencioso** | Ya ejecutado: `scripts/verificar-docs.mjs` en CI | **Se cumple en local, y desde el 2026-09-08 también en un PR del fork.** El script muerde -18 comprobaciones, vistas fallar mutando-. El **job se ha visto en rojo** sobre `pull_request`, y encontró un defecto que el verde local no veía. En el PR del curso sigue sin correr: todas en `action_required`, con la cifra y su fecha en [H-24](hallazgos.md) |
 | R-06 | Verificar por código de salida, nunca por la última línea impresa | **Silencioso** | Nada lo comprueba. Es una forma de mirar | **No se puede comprobar desde el repositorio.** Ningún artefacto registra cómo se miró un resultado. Lo único que deja rastro son los mensajes de commit que citan la salida, y eso mide lo que se escribe, no lo que se hizo |
 | R-07 | `hallazgos.md` se arrastra entre ramas y se comprueba entrada a entrada | **Silencioso** | Parcialmente ejecutado: la comprobación exige la sección «Lo que se arrastra» con su tabla | **Se incumplió dos veces y luego se cumplió.** En `s3/start → s4/start` no cruzó: `hallazgos.md` no existía en la rama y tres arreglos se perdieron. En `s4/start → s5/start` se hizo fichero a fichero y **encontró nueve defectos vivos**. La primera tabla que aplicaba la regla la incumplió el mismo día: [H-22](hallazgos.md) |
@@ -92,7 +92,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-01 · Rama por unidad de trabajo | **Sí**: 45 commits y nadie lo notó | **Sí, previniendo** | **Bajada** el 2026-09-12: hook de `pre-commit` que rechaza `main` y `sN/*`, y deja pasar un HEAD desacoplado para no romper un rebase |
 | R-02 · `/commit` y `gh pr create` | No: se nota que no hay PR | — | **Conservar arriba**. 5 de 5 |
 | R-03 · Adversarial sobre el PR | **Sí** | Su **ejecución** sí; su criterio no | **Bajada, y vista morder** el 2026-09-09. El criterio sigue siendo **conversación** |
-| R-04 · No repetir el resumen en el chat | No | No relevante | **Borrar**. No protege nada y alarga el contexto |
+| R-04 · No repetir el resumen en el chat | No | No relevante | **Borrada** de `CLAUDE.md` el 2026-09-12. No protegía nada que R-02 no cubra y alargaba el contexto |
 | R-05 · Contrato al día y verificador ejecutado | **Sí** | **Sí** | **Ya bajada, y rota**: [H-24](hallazgos.md). Arreglarla es el trabajo, no reclasificarla |
 | R-06 · Verificar por código de salida | **Sí** | No: ningún artefacto registra cómo se miró | **Conversación** |
 | R-07 · Arrastre de hallazgos entre ramas | **Sí**: costó nueve defectos | La **tabla** sí; el contraste entrada a entrada no | **Bajada a medias** ya. El resto, **conversación** |
@@ -104,7 +104,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-13 · La doc desactualizada es peor que no tenerla | — | **No puede serlo** | Tercera categoría. Ver sección 3 |
 | R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajar**. La de más valor de las tres |
 
-**Cuentas**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03 y R-01 ya lo están** (2026-09-09 y 2026-09-12); quedan R-08 y R-14. R-10 salió de «borrar» el 2026-09-12, cuando el hook de R-01 le dio objeto.
+**Cuentas**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03 y R-01 ya lo están** (2026-09-09 y 2026-09-12); quedan R-08 y R-14. R-10 salió de «borrar» el 2026-09-12, cuando el hook de R-01 le dio objeto, y R-04 se borró ese mismo día: **ya no queda ninguna a borrar**.
 
 ### Dónde nuestra clasificación se separa de la del directo
 
@@ -127,7 +127,7 @@ R-13 no está pendiente de comprobar: **no se puede comprobar**, y decirlo es m�
 
 Ninguna comprobación sabe si un documento sigue siendo útil. Sabe si sigue **coincidiendo con el código**, que es otra cosa, y es exactamente lo que hace `scripts/verificar-docs.mjs` con sus dieciocho comprobaciones en esta rama -las del verificador, que no tienen que ver con las catorce reglas de la tabla de arriba. Un documento puede coincidir con el código al milímetro y no servirle a nadie.
 
-Lo mismo vale para R-04, en pequeño: «no repitas el resumen en el chat» es una regla sobre lo que se dice, y no hay repositorio donde mirarlo.
+Lo mismo valía para R-04, en pequeño: «no repitas el resumen en el chat» era una regla sobre lo que se dice, y no hay repositorio donde mirarlo. La diferencia con R-13 es que R-04 no protegía nada que otra regla no cubriera, y por eso se borró en vez de quedarse como criterio.
 
 Distinguir las tres categorías -se cumple, no se cumple, no se puede comprobar- es lo que impide que la auditoría termine en una lista de deberes. Una regla que no se puede comprobar no es una regla rota: es una regla que depende de criterio, y lo que hay que decidir es si eso basta.
 
