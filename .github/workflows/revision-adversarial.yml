@@ -137,12 +137,15 @@ jobs:
           rama="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
           duenio="${GITHUB_REPOSITORY%%/*}"
           upstream="LIDR-academy/flowsync-ai4devs"
+          objetivo_revision="HEAD"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            duenio="${{ github.event.pull_request.head.repo.owner.login }}"
             git fetch --quiet \
               "https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git" \
               "${{ github.event.pull_request.head.ref }}"
             git update-ref refs/revision-head FETCH_HEAD
+            objetivo_revision="refs/revision-head"
 
             anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" refs/revision-head || true)
             if [ -n "$anterior" ]; then
@@ -156,6 +159,7 @@ jobs:
             echo "base=$base" >> "$GITHUB_OUTPUT"
             echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
             echo "repo_pr=${{ github.repository }}" >> "$GITHUB_OUTPUT"
+            echo "objetivo=$objetivo_revision" >> "$GITHUB_OUTPUT"
             echo "seguir=si" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -199,6 +203,7 @@ jobs:
           echo "base=$base" >> "$GITHUB_OUTPUT"
           echo "pr=$(echo "$pr" | jq -r '.[0].number')" >> "$GITHUB_OUTPUT"
           echo "repo_pr=$upstream" >> "$GITHUB_OUTPUT"
+          echo "objetivo=$objetivo_revision" >> "$GITHUB_OUTPUT"
           echo "seguir=si" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
@@ -224,6 +229,7 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BASE: ${{ steps.puerta.outputs.base }}
+          OBJETIVO: ${{ steps.puerta.outputs.objetivo }}
         run: |
           set -euo pipefail
 
@@ -288,9 +294,9 @@ jobs:
                    ':(exclude)docs/**/*.md'
                    ':(exclude).github/*.md')
 
-          git diff "$BASE...HEAD" --stat -- . "${EXCLUIR[@]}" > /tmp/cambio.txt
+          git diff "$BASE...$OBJETIVO" --stat -- . "${EXCLUIR[@]}" > /tmp/cambio.txt
           echo >> /tmp/cambio.txt
-          git diff "$BASE...HEAD" -- . "${EXCLUIR[@]}" >> /tmp/cambio.txt
+          git diff "$BASE...$OBJETIVO" -- . "${EXCLUIR[@]}" >> /tmp/cambio.txt
 
           # Si el cambio es demasiado grande, el revisor agota los turnos leyendo
           # y muere sin informe. La calibración ya dice que entonces el problema
@@ -298,7 +304,7 @@ jobs:
           # descubrirlo en un `Reached max turns`.
           lineas=$(wc -l < /tmp/cambio.txt)
           if [ "$lineas" -gt 6000 ]; then
-            echo "aviso: el diff tiene $lineas lineas. Por encima de ~6000 el revisor suele agotar los 40 turnos leyendo y morir sin informe (H-30)." \
+            echo "aviso: el diff tiene $lineas líneas. Por encima de ~6000 el revisor suele agotar los 40 turnos leyendo y morir sin informe (H-30)." \
               >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -390,11 +396,11 @@ jobs:
               exit 0
             fi
 
-            # El diagnostico va al log **y** al resumen. Estuvo solo en el
-            # resumen hasta el 2026-09-09, y eso lo hacia ilegible desde
-            # `gh run view --log-failed`: el unico sitio donde estaba exigia
-            # sesion en el navegador. Un fallo que cuesta leer se investiga
-            # menos, que es media razon para que no se arregle.
+            # El diagnóstico va al log **y** al resumen. Estuvo solo en el
+            # resumen hasta el 2026-09-09, y eso lo hacía ilegible desde
+            # `gh run view --log-failed`: el único sitio donde estaba exigía
+            # sesión en el navegador. Un fallo que cuesta leer se investiga
+            # menos, que es media razón para que no se arregle.
             # Se vuelcan **los dos** ficheros. La primera vez que este bloque
             # se ejecutó, `error.txt` salió vacío y el diagnóstico se perdió:
             # el CLI escribe parte de sus errores en **stdout**, que aquí va a
