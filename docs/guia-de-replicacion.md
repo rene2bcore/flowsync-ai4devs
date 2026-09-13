@@ -68,7 +68,7 @@ La migración crea `tmp/db.sqlite3` **y regenera `database/schema.ts`**, que est
 
 ```bash
 npm run dev     # http://localhost:3333
-npm test        # 84 pruebas functional
+npm test        # todas en verde; cuántas, en CLAUDE.md
 ```
 
 ### Frontend
@@ -77,7 +77,7 @@ npm test        # 84 pruebas functional
 cd frontend
 npm install
 npm run dev     # http://localhost:5173
-npm test        # 28 pruebas de lib/api.ts
+npm test        # Vitest sobre lib/api.ts
 npm run lint    # oxlint, NO eslint
 npm run build   # aquí vive el typecheck
 ```
@@ -245,7 +245,7 @@ El verificador se lanza **desde la raíz** y necesita el backend instalado: preg
 openspec validate --specs; echo "specs=$?"
 ```
 
-Lo que tiene que salir hoy en la rama del port: **84 pruebas de backend, 28 de frontend, 18 comprobaciones del verificador, y cuatro ceros.**
+Lo que tiene que salir hoy en la rama del port: **las dos suites y el verificador enteros en verde, y cuatro ceros.** El número de pruebas está en `CLAUDE.md` y no aquí a propósito: copiado en seis documentos se desfasaba con cada prueba nueva, y ahora CI lo contrasta con lo que ejecuta el runner.
 
 Los mismos cuatro corren en `.github/workflows/verificacion.yml` y **bloquean**. El revisor adversarial va en un workflow aparte y **no bloquea**, a propósito: un revisor no determinista que tumba la build se desactiva la primera vez que se equivoca con prisa, y entonces no queda ni revisor ni build.
 

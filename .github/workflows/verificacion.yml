@@ -29,7 +29,15 @@ jobs:
       - run: npm run lint
       # La suite escribe sobre su propio fichero de base de datos (ADR-0001),
       # así que no hace falta preparar nada más.
-      - run: npm test
+      #
+      # La salida se guarda para contrastar el número de pruebas con CLAUDE.md,
+      # que es el único sitio que lo cita. `pipefail` es obligatorio: sin él, el
+      # `tee` taparía el código de salida de la suite (R-06).
+      - name: Pruebas, y su número contra CLAUDE.md
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ../salida-pruebas.txt
+          node ../scripts/recuento-pruebas.mjs backend ../salida-pruebas.txt
 
   frontend:
     name: Frontend
@@ -52,7 +60,11 @@ jobs:
       # Vitest sobre `lib/api.ts`, que es el unico punto de contacto con el
       # backend y donde vive la logica del frontend. El runner venia de
       # `s3/start` y no cruzo de rama; se recupero el 2026-09-02.
-      - run: npm test
+      - name: Pruebas, y su número contra CLAUDE.md
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ../salida-pruebas.txt
+          node ../scripts/recuento-pruebas.mjs frontend ../salida-pruebas.txt
 
   documentacion:
     name: La documentación corresponde con el código
