@@ -43,6 +43,16 @@ export function contratoServido(): Promise<string> {
 }
 
 /**
+ * Si el documento servido ya se construyó en este proceso. Lo usa la prueba de
+ * H-35, que solo puede ver la carrera si es la primera en construirlo: la
+ * librería acumula en cada construcción, así que vaciar la caché no la
+ * devolvería a su estado de partida.
+ */
+export function contratoYaConstruido(): boolean {
+  return contrato !== null
+}
+
+/**
  * Una sola serialización para los dos comandos: dos espacios y salto final.
  * Si cada uno eligiera la suya, el check fallaría por la indentación y no por
  * el contrato, que es ruido con apariencia de hallazgo.

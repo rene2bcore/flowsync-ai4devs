@@ -1,4 +1,4 @@
-import { contratoServido } from '#openapi/document'
+import { contratoServido, contratoYaConstruido } from '#openapi/document'
 import { test } from '@japa/runner'
 
 /**
@@ -19,14 +19,22 @@ import { test } from '@japa/runner'
  * solaparse: por HTTP la carrera no se reproduce y la prueba pasaría con el
  * defecto puesto.
  *
- * Tiene que ser **la única** que construye el documento en el proceso de
+ * Tiene que ser **la primera** que construye el documento en el proceso de
  * pruebas: si otra lo calentara antes, esta partiría de la caché llena y
- * dejaría de ver la carrera.
+ * dejaría de ver la carrera. Hasta el 2026-09-12 eso lo decía solo este
+ * comentario, y el revisor de CI señaló que una prueba futura contra
+ * `/api.json` la neutralizaría en silencio. Ahora lo exige, y en ese caso
+ * falla diciendo por qué.
  */
 test.group('Contrato | el documento servido', () => {
   test('peticiones simultáneas al arrancar reciben un documento sin repetidos', async ({
     assert,
   }) => {
+    assert.isFalse(
+      contratoYaConstruido(),
+      'otra prueba de este proceso ya construyó el documento servido, así que esta ya no puede ver la carrera de H-35; muévela o sepárala'
+    )
+
     const servidos = await Promise.all([1, 2, 3, 4].map(() => contratoServido()))
 
     const repetidos: string[] = []
