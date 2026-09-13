@@ -89,7 +89,7 @@ jobs:
           # lista de ramas escrita a mano envejece igual que la documentación
           # que este repositorio persigue.
           unidad_anterior() {
-            local rama="$1" duenio="$2" upstream="$3"
+            local rama="$1" duenio="$2" upstream="$3" objetivo="${4:-HEAD}"
             local candidatas mejor="" mejor_n=999999 repo_c cabeza n
 
             local consulta='.[] | select(.headRepositoryOwner.login == $d and .headRepository != null) | [.headRepository.nameWithOwner, .headRefName] | @tsv'
@@ -99,8 +99,8 @@ jobs:
               [ -n "$repo_c" ] || continue
               [ "$cabeza" = "$rama" ] && continue
               git fetch --quiet "https://github.com/$repo_c.git" "$cabeza" 2>/dev/null || continue
-              git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null || continue
-              n=$(git rev-list --count FETCH_HEAD..HEAD)
+              git merge-base --is-ancestor FETCH_HEAD "$objetivo" 2>/dev/null || continue
+              n=$(git rev-list --count FETCH_HEAD.."$objetivo")
               if [ "$n" -lt "$mejor_n" ]; then
                 mejor="$cabeza"
                 mejor_n="$n"
@@ -139,7 +139,12 @@ jobs:
           upstream="LIDR-academy/flowsync-ai4devs"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
+            git fetch --quiet \
+              "https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git" \
+              "${{ github.event.pull_request.head.ref }}"
+            git update-ref refs/revision-head FETCH_HEAD
+
+            anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" refs/revision-head || true)
             if [ -n "$anterior" ]; then
               base="refs/unidad-anterior"
               echo "revisando solo esta unidad, sobre \`$anterior\`" >> "$GITHUB_STEP_SUMMARY"
@@ -432,11 +437,18 @@ jobs:
         run: |
           set -euo pipefail
 
+          review_repo="${GITHUB_REPOSITORY}"
+          review_sha="${GITHUB_SHA}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            review_repo="${{ github.event.pull_request.head.repo.full_name }}"
+            review_sha="${{ github.event.pull_request.head.sha }}"
+          fi
+
           {
             echo "## Revisión adversarial"
             echo
             echo "> Automática, sobre \`${{ github.sha }}\`. No bloquea; si no puede comentar en el PR, el informe queda en el resumen del job."
-            echo "> Los criterios están en [\`REVIEW.md\`](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/REVIEW.md), que es la que se le inyecta."
+            echo "> Los criterios están en [\`REVIEW.md\`](https://github.com/$review_repo/blob/$review_sha/REVIEW.md), que es la que se le inyecta."
             echo
             cat /tmp/informe.md
           } > /tmp/comentario.md
