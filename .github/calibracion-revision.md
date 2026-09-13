@@ -152,7 +152,7 @@ Los dos pasos que faltaban -la credencial y verla morder- están hechos. `R-03` 
 
 Lo que no está probado y conviene no dar por hecho:
 
-- **Que un token caducado se vea en rojo.** La asimetría está escrita -sin credencial, verde; con credencial rota, rojo- y **no se ha provocado**. El 2026-09-13 se decidió no provocarlo: el revisor no bloquea nada y su informe se lee en cada push, así que un token caducado se notaría al leerlo aunque el job no se pusiera en rojo. Queda como no comprobado, no como comprobado.
+- **Que el caso `CLAUDE_CODE_OAUTH_TOKEN` caducado se omita en verde.** Desde el 2026-09-13 la asimetría escrita ya no es «credencial rota, rojo» para ese caso concreto: si es la única credencial y el CLI responde `401 Invalid bearer token`, se trata como ausencia operativa de credencial y se deja el diagnóstico en el resumen. **No se ha provocado**; queda como no comprobado, no como comprobado.
 - **Que el informe llegue al PR del curso.** Comprobado el 2026-09-09: **no llega**. El token de nuestro repositorio no puede comentar en `LIDR-academy`, así que el informe cae al resumen del job, que es lo que el diseño ya preveía. **Aceptado así el 2026-09-13**: arreglarlo exige que el PR viva en un repositorio donde tengamos permisos, que es H-24.
 - ~~Que la puerta acierte al decir «no hay nada que revisar».~~ Arreglada con H-27 y **vista disparar por `push`** en cada empujón de 2026-09-12 y 13.
 

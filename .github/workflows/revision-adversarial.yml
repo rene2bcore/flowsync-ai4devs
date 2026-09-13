@@ -286,7 +286,8 @@ jobs:
           # descubrirlo en un `Reached max turns`.
           lineas=$(wc -l < /tmp/cambio.txt)
           if [ "$lineas" -gt 6000 ]; then
-            echo "aviso: el diff tiene $lineas lineas. Por encima de ~6000 el revisor"               "suele agotar los 40 turnos leyendo y morir sin informe (H-30)."               >> "$GITHUB_STEP_SUMMARY"
+            echo "aviso: el diff tiene $lineas lineas. Por encima de ~6000 el revisor suele agotar los 40 turnos leyendo y morir sin informe (H-30)." \
+              >> "$GITHUB_STEP_SUMMARY"
           fi
 
           {
