@@ -81,7 +81,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 | R-11 | Todo atajo se escribe como deuda técnica | **Silencioso**, y el que más decae | Nada hoy | **Se cumple, y con formato propio.** Cada atajo tiene su sitio declarado: `hallazgos.md` para los defectos, la sección «Lo que no se ha visto» de `.github/calibracion-revision.md` para el revisor, y H-18 para lo que se archivó sin ejecutar. Nada de esto lo obliga una herramienta |
 | R-12 | Un lint, test fallando o flaky se arreglan aunque no los hayas causado | **Silencioso** | CI lo ejecuta para lo que corre en CI, y nada para lo demás | **Se cumple, y por encima de lo que pide.** No solo se arreglaron rojos ajenos: se arreglaron **nueve defectos que ninguna herramienta señalaba** porque la suite estaba en verde. La parte no comprobable es la contraria: no hay forma de saber cuántos rojos se ignoraron antes de que existiera CI |
 | R-13 | La documentación desactualizada es peor que no tenerla | **No comprobable** | Nada puede. Ver abajo | **No se puede comprobar** |
-| R-14 | Una comprobación cuenta cuando se la ha visto fallar | **Peor que silencioso**: da una garantía que no existe | Nada automático. Se ejecuta mutando a mano y mirando el rojo | **No se cumplía; ahora se cumple para el script y no para el job.** Siete revisiones seguidas encontraron comprobaciones en verde sobre mutaciones reales. Las 15 del verificador ya se han visto fallar. **Los dos workflows, no**: 10 ejecuciones, 10 verdes, cero rojos provocados |
+| R-14 | Una comprobación cuenta cuando se la ha visto fallar | **Peor que silencioso**: da una garantía que no existe | **Ejecutado desde el 2026-09-12**: `scripts/mutaciones.mjs`, job propio en `verificacion.yml`. Defectos que ya existieron, cada uno con las comprobaciones que tienen que caer nombrando su motivo; cuáles, con `--listar` | **Se cumple para lo que está en el catálogo, y solo para eso.** Antes: siete revisiones seguidas encontraron comprobaciones en verde sobre mutaciones reales, y los workflows no se habían visto en rojo nunca. **Los jobs ya sí**: el revisor mordió un defecto plantado el 2026-09-09, y `verificacion.yml` se puso en rojo el 2026-09-12 con tres ramas de mutación. El catálogo se vio fallar en sus tres modos: rojo por otro motivo, mutación que sobrevive y texto que ya no existe. **Lo que no cubre**: toda comprobación que nadie añada al catálogo |
 
 ## 2 bis · Qué se hace con cada una
 
@@ -102,9 +102,11 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-11 · Todo atajo se escribe como deuda | **Sí**, y es el que más decae | No | **Conversación** |
 | R-12 · Lint, test fallando o flaky se arreglan | **Sí** | **Sí**: es CI | **Ya bajada**, con la misma avería que R-05 |
 | R-13 · La doc desactualizada es peor que no tenerla | — | **No puede serlo** | Tercera categoría. Ver sección 3 |
-| R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajar**. La de más valor de las tres |
+| R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajada** el 2026-09-12, con un catálogo de mutaciones en CI. Qué entra en el catálogo sigue siendo criterio |
 
-**Cuentas**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03, R-01 y R-08 ya lo están** (2026-09-09 y 2026-09-12); queda R-14. R-10 salió de «borrar» el 2026-09-12, cuando el hook de R-01 le dio objeto, y R-04 se borró ese mismo día: **ya no queda ninguna a borrar**.
+**Cuentas de la clasificación**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas.
+
+**Dónde está cada una el 2026-09-12**: **las 4 a bajar ya lo están** -R-03 el 2026-09-09; R-01, R-08 y R-14 el 2026-09-12-. R-10 salió de «borrar» cuando el hook de R-01 le dio objeto, y R-04 se borró: **no queda ninguna a borrar**. Las 4 de conversación siguen pendientes.
 
 ### Dónde nuestra clasificación se separa de la del directo
 

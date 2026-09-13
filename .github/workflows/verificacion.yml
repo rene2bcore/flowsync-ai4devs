@@ -66,6 +66,35 @@ jobs:
           npm test 2>&1 | tee ../salida-pruebas.txt
           node ../scripts/recuento-pruebas.mjs frontend ../salida-pruebas.txt
 
+  mutaciones:
+    name: Las comprobaciones muerden (R-14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Instalar el backend
+        run: npm ci && cp .env.example .env && node ace generate:key
+        working-directory: backend
+
+      - name: Instalar el frontend
+        run: npm ci
+        working-directory: frontend
+
+      # Reintroduce defectos que ya existieron y exige que la comprobación que
+      # dice cubrir cada uno se ponga en rojo por ese motivo, no por otro. Falla
+      # también si una mutación ya no se puede aplicar porque el código cambió:
+      # una mutación que no se aplica es un verde falso.
+      - name: Catálogo de mutaciones
+        run: node scripts/mutaciones.mjs
+
   documentacion:
     name: La documentación corresponde con el código
     runs-on: ubuntu-latest
