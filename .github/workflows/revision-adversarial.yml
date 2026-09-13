@@ -90,22 +90,23 @@ jobs:
           # que este repositorio persigue.
           unidad_anterior() {
             local rama="$1" duenio="$2" upstream="$3"
-            local candidatas mejor="" mejor_n=999999 c n
+            local candidatas mejor="" mejor_n=999999 repo_c cabeza n
 
-            local consulta='.[] | select(.headRepositoryOwner.login == $d) | .headRefName'
-            candidatas=$(gh pr list --repo "$upstream" --state open --json headRefName,headRepositoryOwner --limit 50 | jq -r --arg d "$duenio" "$consulta")
+            local consulta='.[] | select(.headRepositoryOwner.login == $d and .headRepository != null) | [.headRepository.nameWithOwner, .headRefName] | @tsv'
+            candidatas=$(gh pr list --repo "$upstream" --state open --json headRefName,headRepositoryOwner,headRepository --limit 50 | jq -r --arg d "$duenio" "$consulta")
 
-            for c in $candidatas; do
-              [ "$c" = "$rama" ] && continue
-              git fetch --quiet origin "$c" 2>/dev/null || continue
+            while IFS=$'\t' read -r repo_c cabeza; do
+              [ -n "$repo_c" ] || continue
+              [ "$cabeza" = "$rama" ] && continue
+              git fetch --quiet "https://github.com/$repo_c.git" "$cabeza" 2>/dev/null || continue
               git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null || continue
               n=$(git rev-list --count FETCH_HEAD..HEAD)
               if [ "$n" -lt "$mejor_n" ]; then
-                mejor="$c"
+                mejor="$cabeza"
                 mejor_n="$n"
                 git update-ref "refs/unidad-anterior" FETCH_HEAD
               fi
-            done
+            done <<< "$candidatas"
 
             [ -n "$mejor" ] && echo "$mejor"
           }
@@ -433,7 +434,7 @@ jobs:
             echo "## Revisión adversarial"
             echo
             echo "> Automática, sobre \`${{ github.sha }}\`. No bloquea; si no puede comentar en el PR, el informe queda en el resumen del job."
-            echo "> Los criterios están en [\`REVIEW.md\`](REVIEW.md), que es la que se le inyecta."
+            echo "> Los criterios están en [\`REVIEW.md\`](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/REVIEW.md), que es la que se le inyecta."
             echo
             cat /tmp/informe.md
           } > /tmp/comentario.md
