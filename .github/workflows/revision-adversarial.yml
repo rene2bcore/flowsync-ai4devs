@@ -447,7 +447,7 @@ jobs:
           {
             echo "## Revisión adversarial"
             echo
-            echo "> Automática, sobre \`${{ github.sha }}\`. No bloquea; si no puede comentar en el PR, el informe queda en el resumen del job."
+            echo "> Automática, sobre \`$review_sha\`. No bloquea; si no puede comentar en el PR, el informe queda en el resumen del job."
             echo "> Los criterios están en [\`REVIEW.md\`](https://github.com/$review_repo/blob/$review_sha/REVIEW.md), que es la que se le inyecta."
             echo
             cat /tmp/informe.md
