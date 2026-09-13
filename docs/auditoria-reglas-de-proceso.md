@@ -75,7 +75,7 @@ Catorce en total: siete del ciclo de trabajo, que venían del curso o salieron d
 
 | # | Regla | Modo de fallo | Qué la ejecutaría | Estado, con evidencia |
 |---|---|---|---|---|
-| R-08 | Un bug no se cierra sin reproducirlo en E2E, y deja una prueba detrás | **Silencioso** | Nada hoy | **Se cumple casi siempre: 10 de 12.** De los commits `fix:`, diez tocan un fichero de prueba. Los dos que no: uno arregla una comprobación del verificador -su prueba es una mutación, que no es un fichero- y el otro es del Módulo 1, cuando **no había ni una prueba en el proyecto** |
+| R-08 | Un bug no se cierra sin reproducirlo en E2E, y deja una prueba detrás | **Silencioso** | **Ejecutado desde el 2026-09-12**, la mitad computable: `scripts/fix-con-prueba.mjs` en CI sobre cada push, con `Sin-prueba: <motivo>` como salida explícita. Probado por `scripts/probar-fix-con-prueba.mjs`, 10 casos y cuatro mutaciones | **Se incumplió justo después de declararse cumplida**: en la unidad `feat/sesion-5-guardarrailes`, **7 de 16** commits `fix:` dejan prueba o comprobación. Es [H-36](hallazgos.md). Lo que decía esta celda el 2026-09-08: **Se cumple casi siempre: 10 de 12.** De los commits `fix:`, diez tocan un fichero de prueba. Los dos que no: uno arregla una comprobación del verificador -su prueba es una mutación, que no es un fichero- y el otro es del Módulo 1, cuando **no había ni una prueba en el proyecto** |
 | R-09 | Al índice se va por nombre | Silencioso, auditable | El historial ya lo registra; falta quien lo lea | **Se cumple.** En 61 commits, **cero ficheros que no debían entrar**: ni `docs/plans/`, ni `docs/propuestas-rene-lopez.md`, ni `backend/.env`, ni la base de desarrollo. Los dos `chore:` de «fuera del repositorio» tocan **solo `.gitignore`**: nunca hubo que sacar nada del índice |
 | R-10 | Los hooks no se saltan | Ruidoso | El propio hook, más el historial | **Era vacuamente cierta: no había hooks de git**, y `--no-verify` no se saltaba nada. **Desde el 2026-09-12 tiene objeto**: saltarse `.githooks/pre-commit` es la única forma de commitear en `main` o en una `sN/*`. **Se conserva.** Si se cumple no se puede medir: `--no-verify` no deja rastro |
 | R-11 | Todo atajo se escribe como deuda técnica | **Silencioso**, y el que más decae | Nada hoy | **Se cumple, y con formato propio.** Cada atajo tiene su sitio declarado: `hallazgos.md` para los defectos, la sección «Lo que no se ha visto» de `.github/calibracion-revision.md` para el revisor, y H-18 para lo que se archivó sin ejecutar. Nada de esto lo obliga una herramienta |
@@ -96,7 +96,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-05 · Contrato al día y verificador ejecutado | **Sí** | **Sí** | **Ya bajada, y rota**: [H-24](hallazgos.md). Arreglarla es el trabajo, no reclasificarla |
 | R-06 · Verificar por código de salida | **Sí** | No: ningún artefacto registra cómo se miró | **Conversación** |
 | R-07 · Arrastre de hallazgos entre ramas | **Sí**: costó nueve defectos | La **tabla** sí; el contraste entrada a entrada no | **Bajada a medias** ya. El resto, **conversación** |
-| R-08 · Un bug deja una prueba detrás | **Sí** | **Sí**: un commit `fix:` que no toque una prueba es detectable | **Bajar**. Es el candidato más limpio que queda |
+| R-08 · Un bug deja una prueba detrás | **Sí**: 9 de 16 en cuatro días, y nadie lo notó | **Sí**: un commit `fix:` que no toque una prueba es detectable | **Bajada** el 2026-09-12. Solo la mitad «deja una prueba»; «reproducirlo antes» sigue siendo conversación |
 | R-09 · Al índice se va por nombre | Sí en teoría | Del pasado no; `.gitignore` cubre lo que importa | **Conservar arriba**. 61 de 61 |
 | R-10 · Los hooks no se saltan | No: saltarlo hay que teclearlo | No: `--no-verify` no deja rastro en el commit | **Conservar arriba**, decidido el 2026-09-12. La propuesta era «borrar, o darle un objeto», y el hook de R-01 se lo dio: es la única salida que le queda a esa regla, y borrarla la dejaría sin nombre |
 | R-11 · Todo atajo se escribe como deuda | **Sí**, y es el que más decae | No | **Conversación** |
@@ -104,7 +104,7 @@ El árbol de decisión de la sesión, aplicado a las catorce. Dos preguntas: **�
 | R-13 · La doc desactualizada es peor que no tenerla | — | **No puede serlo** | Tercera categoría. Ver sección 3 |
 | R-14 · Una comprobación cuenta cuando se la ha visto fallar | **Sí, y peor**: da garantía falsa | **Sí, y es lo interesante**: mutar y exigir rojo es programable | **Bajar**. La de más valor de las tres |
 
-**Cuentas**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03 y R-01 ya lo están** (2026-09-09 y 2026-09-12); quedan R-08 y R-14. R-10 salió de «borrar» el 2026-09-12, cuando el hook de R-01 le dio objeto, y R-04 se borró ese mismo día: **ya no queda ninguna a borrar**.
+**Cuentas**: 4 a bajar, 3 a conservar arriba, 4 a conversación, 1 a borrar, 2 ya bajadas y averiadas. **De las 4 a bajar, R-03, R-01 y R-08 ya lo están** (2026-09-09 y 2026-09-12); queda R-14. R-10 salió de «borrar» el 2026-09-12, cuando el hook de R-01 le dio objeto, y R-04 se borró ese mismo día: **ya no queda ninguna a borrar**.
 
 ### Dónde nuestra clasificación se separa de la del directo
 

@@ -1066,6 +1066,33 @@ contratoServido ??= JSON.stringify(await openapi.buildDocument())
 
 **Lo que enseña**: H-26 se cerró midiendo cuatro peticiones **seguidas**, y el defecto nuevo solo existe con peticiones **simultáneas**. Otra vez la mutación contigua a la que se comprobó.
 
+## H-36 · R-08 se declaró cumplida y en cuatro días se incumplió nueve veces
+
+**Rama: `feat/sesion-5-guardarrailes`. Severidad: media.** **Cerrado hacia delante** el 2026-09-12: CI lo impide desde ese día. Los nueve commits se quedan como están, porque el historial no se reescribe.
+
+La auditoría del 2026-09-08 marcó R-08 -«un bug no se cierra sin reproducirlo, y deja una prueba detrás»- como **«Se cumple casi siempre: 10 de 12»**, y CLAUDE.md la clasifica como la regla que más rápido se erosiona. Las dos cosas eran ciertas a la vez.
+
+**Cómo se verificó**: al escribir la comprobación de R-08, pasándola sobre los commits de la unidad que no están en ninguna otra rama.
+
+| | Commits `fix:` |
+|---|---:|
+| Tocan una prueba o `scripts/verificar-docs.mjs` | 7 |
+| **No tocan ninguna** | **9** |
+
+Los nueve no son iguales, y conviene no meterlos en el mismo saco:
+
+| Qué eran | Commits | Lectura |
+|---|---|---|
+| Arreglos de CI -el revisor, y la build rota en Linux- | `5681e8f` H-27, `b9582b0` H-28, `3a4c173`, `2ca8775` y `9d7f308` H-30, `88cf907` | **Verificados**, viendo la ejecución en rojo y en verde, y escrito en su hallazgo. Lo que no dejan es algo que vuelva a fallar si el defecto regresa. Es el caso para el que existe `Sin-prueba:` |
+| Un arreglo que no lo era | `4fe72d0`, quitar una constante sin uso | **Mal etiquetado.** Era `refactor:` |
+| Arreglos de código o entorno sin prueba | `9510769`, el 401 en `auth-provider.tsx`; `cf4312b`, el puerto de la suite | **El incumplimiento de verdad.** Verificados a mano en el momento, sin nada que lo repita. El segundo es de hoy, hecho el mismo día que se escribía esta entrada |
+
+**Por qué el 10 de 12 no lo vio venir**: medía el pasado. Una regla que se cumple mientras alguien la está mirando dice poco de la semana siguiente, y la semana siguiente fue la del revisor en CI, llena de arreglos a un workflow que no tiene suite.
+
+**Qué lo vigila**: `scripts/fix-con-prueba.mjs`, en `verificacion.yml` sobre los commits de cada push. Un `fix:` que no toque una prueba ni el verificador, y no lleve `Sin-prueba: <motivo>`, pone la build en rojo. `scripts/probar-fix-con-prueba.mjs` fija sus diez casos, y cuatro mutaciones del patrón -no reconocer `fix(ambito)!:`, aceptar una excusa vacía, contar un helper como prueba, no contar el verificador- tumban cada una el suyo.
+
+**Lo que no vigila**: la primera mitad de la regla. Que el bug se reprodujera antes de arreglarlo no deja rastro en el commit, y sigue siendo criterio.
+
 ---
 
 # Al abrir el Módulo 5

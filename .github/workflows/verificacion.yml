@@ -59,6 +59,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # R-08 lee los commits del push y los compara con las demás ramas.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -92,6 +95,32 @@ jobs:
       # en Linux, que es donde Git ignora un hook sin bit de ejecución.
       - name: El hook de rama rechaza main y sN/* (R-01)
         run: node scripts/probar-hook-rama.mjs
+
+      - name: La comprobación de R-08 decide bien
+        run: node scripts/probar-fix-con-prueba.mjs
+
+      # R-08: todo commit `fix:` toca una prueba o dice por qué no, con una
+      # línea `Sin-prueba: <motivo>`. Solo mira los commits de este push: el
+      # historial anterior no se reescribe, y está contado en la auditoría.
+      # Si `before` no existe -rama nueva, o historial reescrito-, mira lo que
+      # no está en ninguna otra rama.
+      #
+      # No corre en `pull_request`: el rango del PR arrastra la unidad entera,
+      # con commits anteriores a la regla, y los nuestros vienen de un fork
+      # donde ese evento no se ejecuta (H-24).
+      - name: Todo fix deja una prueba o dice por qué no (R-08)
+        if: github.event_name == 'push'
+        env:
+          ANTES: ${{ github.event.before }}
+          DESPUES: ${{ github.sha }}
+          RAMA: ${{ github.ref_name }}
+        run: |
+          if git cat-file -e "$ANTES^{commit}" 2>/dev/null; then
+            node scripts/fix-con-prueba.mjs "$ANTES..$DESPUES"
+          else
+            otras=$(git for-each-ref --format='%(refname)' refs/remotes/origin | grep -vxF "refs/remotes/origin/$RAMA" || true)
+            node scripts/fix-con-prueba.mjs "$DESPUES" --not $otras
+          fi
 
       - name: Validar las specs vivas
         run: |

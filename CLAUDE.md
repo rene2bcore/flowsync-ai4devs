@@ -171,6 +171,7 @@ Siete reglas, y ninguna viene del curso. Las **seis primeras** son las que renel
   Primero se reproduce en un entorno E2E lo más parecido posible a como lo vive el usuario final, y se confirma que el arreglo ataca el problema real y no el síntoma.
   Todo bug arreglado deja detrás una prueba que lo reproduce.
   Nadie nota que no se reprodujo: el bug se cierra igual y el commit se ve idéntico.
+  **La mitad de «deja una prueba» la comprueba CI desde el 2026-09-12** (`scripts/fix-con-prueba.mjs`): un commit `fix:` que no toque una prueba ni `scripts/verificar-docs.mjs` pone la build en rojo. Si la prueba no puede ser un fichero -un arreglo de CI que se verifica viéndolo en rojo y en verde-, el mensaje lleva una línea `Sin-prueba: <motivo>`. Lo que no es un arreglo no va como `fix:`. La otra mitad, reproducirlo antes, sigue sin rastro. Es [H-36](docs/hallazgos.md).
 
 - **Al índice se va por nombre.** · *Fallo silencioso, pero auditable.*
   `git add <fichero>`, nunca `git add -A` ni `git add .`. Lo que entra en un commit se decide, no se barre.
