@@ -26,7 +26,7 @@ npm run format                                  # prettier --write
 npm run typecheck                               # tsc --noEmit
 ```
 
-Tests (Japa). Dos suites declaradas en `adonisrc.ts`: `unit` (`tests/unit/**/*.spec.ts`, timeout 2s) y `functional` (`tests/functional/**/*.spec.ts`, timeout 30s). Hoy hay **82 pruebas functional**: 27 de `auth`, 41 de `tasks`, 6 de errores, 2 de aislamiento de la base y 6 que fijan los nombres de regla que el frontend traduce (H-05). **`tests/unit/` no existe.** Qué escenario cubre cada una en `docs/trazabilidad.md`.
+Tests (Japa). Dos suites declaradas en `adonisrc.ts`: `unit` (`tests/unit/**/*.spec.ts`, timeout 2s) y `functional` (`tests/functional/**/*.spec.ts`, timeout 30s). Hoy hay **83 pruebas functional**: 28 de `auth`, 41 de `tasks`, 6 de errores, 2 de aislamiento de la base y 6 que fijan los nombres de regla que el frontend traduce (H-05). **`tests/unit/` no existe.** Qué escenario cubre cada una en `docs/trazabilidad.md`.
 
 Los ficheros de prueba declaran `group.each.setup(() => testUtils.db().withGlobalTransaction())`, que aísla un caso de otro dentro de la misma ejecución. Mantenlo al escribir uno nuevo.
 

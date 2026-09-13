@@ -24,11 +24,11 @@ Sin nada grave y sin nada menor que llegue al umbral, el informe correcto es **u
 
 ## Dónde no reportar
 
-- **Lo que ya vigila una comprobación**: `eslint`, `oxlint`, `prettier`, `tsc`, las 82 pruebas de backend, las 28 de frontend, `openapi:check` y las 18 comprobaciones de `verificar-docs.mjs`. Si un script ya lo muerde, un modelo mirándolo es gasto.
+- **Lo que ya vigila una comprobación**: `eslint`, `oxlint`, `prettier`, `tsc`, las 83 pruebas de backend, las 28 de frontend, `openapi:check` y las 18 comprobaciones de `verificar-docs.mjs`. Si un script ya lo muerde, un modelo mirándolo es gasto.
 - **Ficheros generados**: `backend/.adonisjs/`, `backend/database/schema.ts`, `node_modules`.
   **`docs/api/openapi.json` no está en esta lista**, aunque se genere: es el contrato, y lo que afirma sobre autorización y respuestas **sí se revisa**. Estuvo aquí un día y en ese día declaró públicas dos rutas protegidas ([H-25](docs/hallazgos.md)).
 - **Estilo, nombres, orden, «esto podría extraerse a una función»**, y rendimiento sin un número que lo respalde.
-- **Huecos ya declarados**: la ausencia de runner de navegador, y [H-03](docs/hallazgos.md) -el cierre de sesión sin envoltorio `{ data }`-. Están abiertos a propósito y documentados como son. **Que un hueco esté declarado no cubre lo que haya a su lado**: H-23 estaba declarado y H-25 vivía en las mismas cuatro rutas sin que nadie lo viera.
+- **Huecos ya declarados**: la ausencia de runner de navegador. Está abierto a propósito y documentado como es. **Que un hueco esté declarado no cubre lo que haya a su lado**: H-23 estaba declarado y H-25 vivía en las mismas cuatro rutas sin que nadie lo viera.
 
 ## Cita o no firmes
 

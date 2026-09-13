@@ -10,7 +10,7 @@
 
 | Capability | Requisitos | Escenarios | Historias | Criterios | Pruebas | Cobertura de criterios |
 |---|---:|---:|---:|---:|---:|---:|
-| `auth` | 19 | 45 | — | — | 27 | parcial, ver §2 |
+| `auth` | 19 | 46 | — | — | 28 | parcial, ver §2 |
 | `tasks` | 33 | 127 | 12 | 118 | 41 | 18 de 18 requisitos de sistema, ver §3 |
 | transversal | — | — | — | — | 8 | 6 de forma de los errores, 2 de aislamiento de la base |
 
@@ -40,7 +40,7 @@ El efecto sobre esta matriz es concreto: inflan el recuento de historias de 9 a 
 
 ---
 
-## 2 · `auth` · 19 requisitos, 45 escenarios, 27 pruebas
+## 2 · `auth` · 19 requisitos, 46 escenarios, 28 pruebas
 
 Es la única capability con verificación automática.
 
@@ -56,7 +56,8 @@ Es la única capability con verificación automática.
 | Validación previa a comprobar credenciales | `login.spec.ts` · un email mal formado se rechaza antes de comprobar credenciales | `validators/user.ts` |
 | Consulta del perfil propio | `session.spec.ts` · el perfil devuelve la cuenta del token presentado | `profile_controller.ts` |
 | Protección de los recursos privados | `session.spec.ts` · sin cabecera de autorización, y token inventado | `start/kernel.ts` |
-| Cierre de sesión | `session.spec.ts` · cerrar sesión invalida el token usado | `access_tokens_controller.ts` |
+| Cierre de sesión | `session.spec.ts` · cerrar sesión invalida el token usado, y responde envuelto en `data` | `access_tokens_controller.ts` |
+| Forma de las respuestas de la API | `session.spec.ts` · toda respuesta de éxito de auth va envuelta en data y solo en data | `providers/api_provider.ts` |
 | Sesiones simultáneas independientes | `session.spec.ts` · cerrar una sesión no cierra las demás | `access_tokens_controller.ts` |
 | Rutas públicas | `session.spec.ts` · el registro y el login siguen siendo públicos | `start/routes.ts` |
 | Iniciales derivadas del nombre | `initials.spec.ts` | `models/user.ts` |

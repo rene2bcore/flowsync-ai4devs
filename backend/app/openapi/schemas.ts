@@ -276,14 +276,18 @@ export class AccessTokenResponse {
   data!: AccessTokenGrant
 }
 
-/**
- * El cierre de sesión es la única respuesta del proyecto que **no** va envuelta
- * en `{ data }`: el controlador devuelve el objeto plano. Se documenta como es,
- * no como debería ser. Era H-03, y sigue abierto a propósito.
- */
-export class LogoutResponse {
+export class LogoutMessage {
   @ApiProperty({ type: 'string', example: 'Logged out successfully' })
   message!: string
+}
+
+/**
+ * Hasta el 2026-09-12 esto era `{ message }` sin envoltorio, la única respuesta
+ * de éxito del proyecto así (H-03). Ahora va en `{ data }` como las demás.
+ */
+export class LogoutResponse {
+  @ApiProperty({ type: () => LogoutMessage })
+  data!: LogoutMessage
 }
 
 /** Cuerpo del alta. Los cuatro campos son obligatorios; `fullName` acepta nulo. */

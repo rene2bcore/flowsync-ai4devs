@@ -359,11 +359,10 @@ Y lo que más enseña de este módulo: **nueve defectos cerrados volvieron rotos
 
 ## Lo que queda abierto hoy
 
-Actualizado el 2026-09-09, después de cerrar la sesión.
+Actualizado el 2026-09-12. H-03, que abría esta tabla desde el Módulo 2, se cerró ese día con el change `fix-logout-envelope`.
 
 | | Qué | Estado |
 |---|---|---|
-| **H-03** | El cierre de sesión no envuelve en `{ data }` | Abierto **a propósito** desde el Módulo 2, y ahora **documentado como es** en el contrato |
 | **H-24** | La verificación no corre en el PR del curso | **Mitigado, no cerrado.** Corre en un PR del fork. Aprobar las ejecuciones pendientes no está en nuestra mano |
 | — | Los requisitos que solo se observan en pantalla | No hay runner de navegador. Vitest cubre `lib/api.ts`; falta el que ve la pantalla |
 | — | **R-01 sigue sin bajar a un hook** | Está clasificada y contada -45 incumplimientos-, no arreglada. Tres líneas de `pre-commit` |

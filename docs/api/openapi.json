@@ -194,6 +194,17 @@
       "LogoutResponse": {
         "type": "object",
         "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LogoutMessage"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "LogoutMessage": {
+        "type": "object",
+        "properties": {
           "message": {
             "type": "string",
             "example": "Logged out successfully"
@@ -550,7 +561,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Única respuesta del proyecto sin envoltorio `{ data }`. Es H-03.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {

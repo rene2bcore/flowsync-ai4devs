@@ -34,7 +34,7 @@ Qué encontró cada módulo. La atribución sale del commit que introdujo cada e
 | H-01 | Los tests comparten base de datos con desarrollo | Alta | **Resuelto** · `s3/start` 2026-08-25, `s5/start` 2026-09-02. Estaba vivo aquí |
 | H-02 | Cero pruebas automatizadas en todo el proyecto | Alta | **Resuelto (2026-08-25)** |
 | H-11 | El email distingue mayúsculas y minúsculas: la misma persona puede registrarse dos veces | Alta | **Resuelto** · `s3/start` 2026-08-26, `s4/start` 2026-09-02 |
-| H-03 | `/account/logout` no envuelve la respuesta en `data` | Media | Documentado y sorteado |
+| H-03 | `/account/logout` no envuelve la respuesta en `data` | Media | **Resuelto (2026-09-12)** · change `fix-logout-envelope` |
 | H-04 | `fullName` es `nullable`, no `optional` | Media | Documentado y sorteado |
 | H-05 | La traducción de errores depende de los nombres de regla del backend | Media | Vigilado por pruebas |
 | H-06 | El token vive en `localStorage` | Media | Deuda aceptada |
@@ -106,7 +106,7 @@ Idéntica. La base de test vive aparte, en `tmp/db-test.sqlite3`, y no está ver
 
 ## H-02 · Cero pruebas automatizadas en todo el proyecto
 
-**Severidad: alta.** **Cerrado.** De cero pruebas a **82 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
+**Severidad: alta.** **Cerrado.** De cero pruebas a **83 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
 
 | | Estado |
 |---|---|
@@ -191,7 +191,7 @@ Un detalle que vale por la entrada entera: al aplicar la migración sobre la bas
 
 ## H-03 · `/account/logout` no envuelve la respuesta en `data`
 
-**Severidad: media.** Ya sorteado, pero conviene que quede escrito.
+**Severidad: media.** **Cerrado** el 2026-09-12. Estuvo abierto a propósito desde el Módulo 2, sorteado y documentado como era.
 
 Todos los endpoints pasan por `ctx.serialize()`, que envuelve el payload bajo la clave `data`. **Salvo logout**, que devuelve el objeto plano:
 
@@ -207,6 +207,19 @@ POST /api/v1/account/logout
 **Cómo está sorteado**: `frontend/src/lib/api.ts` no tiene desenvolvedor genérico. Cada función decide qué hace con el cuerpo, y `logout` descarta el resultado con `.then(() => undefined)`.
 
 > **Corrección (2026-08-26).** Esta entrada decía que `api.ts` «separa `send()` de `request()`, y logout usa el primero». Esa función nunca ha existido en ninguna rama. Lo detectó la revisión adversarial del PR #15.
+
+**Resuelto el 2026-09-12** por el change `fix-logout-envelope`. El cierre de sesión responde `200 {"data": {"message": "Logged out successfully"}}`: mismo código y mismo mensaje, dentro del envoltorio. Se descartó `204 No Content` porque cambiaba dos cosas del contrato para cerrar un hallazgo que solo trata de una (`design.md` D1).
+
+**Por qué duró tanto sin contradecir nada.** La spec viva exigía la forma plana en su escenario, y el requisito de forma decía «envolver los **datos de cuenta**»: un mensaje de cierre no lo es, así que la excepción cabía. El change amplía la regla a **toda respuesta de éxito** de `auth`, para que la próxima sí choque con un requisito.
+
+**Cómo se verificó**, en este orden:
+
+1. Reproducido contra el servidor de desarrollo con una cuenta de sonda: `200 {"message":"Logged out successfully"}`.
+2. Dos pruebas escritas antes del arreglo y vistas en rojo: el cuerpo exacto del cierre en `session.spec.ts`, y otra que recorre las cuatro respuestas de éxito de `auth` exigiendo `data` como **única** clave de primer nivel. La segunda nombró `cierre`.
+3. `openapi:check` en rojo antes de regenerar, nombrando las cinco rutas JSON que cambiaban: cuatro del esquema y la descripción que citaba H-03.
+4. Verde tras el arreglo: 83 de 83. **Mutación**: devolver otra vez el objeto plano tumba las dos, 81 de 83.
+5. Otra vez contra el servidor: `{"data":{"message":"Logged out successfully"}}`, y el token revocado responde `401`.
+6. En navegador, cerrar sesión desde el perfil sigue llevando a la pantalla de acceso sin aviso. El frontend no cambió: `logout` ya descartaba el cuerpo, que es por lo que el hallazgo nunca rompió nada visible.
 
 ---
 
@@ -649,7 +662,7 @@ Es la forma más incómoda del patrón: **el hueco no se ve cuando lo que falta 
 
 Dos cosas quedaron documentadas **como son y no como deberían ser**, que es lo que hace útil un contrato:
 
-- El cierre de sesión **no va envuelto en `{ data }`**, y es la única respuesta del proyecto así. Es [H-03](#h-03), que sigue abierto.
+- El cierre de sesión **no iba envuelto en `{ data }`**, y era la única respuesta del proyecto así. Era [H-03](#h-03), cerrado el 2026-09-12: el contrato ya lo declara envuelto.
 - `fullName` es **obligatorio en el payload aceptando `null`**, no opcional. Es [H-04](#h-04), y omitirlo devuelve 422.
 
 **Qué lo vigila**: la misma comprobación del verificador, con la **lista cerrada ahora vacía**. Vacía sigue mordiendo: cualquier controlador nuevo sin decorar cae en `inesperados` y falla la build. Vista fallar quitándole los decoradores a `ProfileController`: «fuera del contrato, sin declarar: profile_controller.ts (1)». Borrar la comprobación al cerrar el hueco es como vuelven los defectos.

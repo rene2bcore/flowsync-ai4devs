@@ -39,11 +39,7 @@ export default class AccessTokensController {
   // comentario de `ProfileController`: el contrato las declaraba iguales.
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cerrar la sesión actual' })
-  @ApiResponse({
-    status: 200,
-    type: LogoutResponse,
-    description: 'Única respuesta del proyecto sin envoltorio `{ data }`. Es H-03.',
-  })
+  @ApiResponse({ status: 200, type: LogoutResponse })
   @ApiResponse({ status: 401, type: ErrorResponse })
   @ApiResponse({
     status: 500,
@@ -51,14 +47,12 @@ export default class AccessTokensController {
       'Algo falló y no estaba previsto. El cuerpo es siempre el mismo y no lleva traza, ni rutas del disco, ni la sentencia SQL (ADR-0005).',
     type: () => ErrorResponse,
   })
-  async destroy({ auth }: HttpContext) {
+  async destroy({ auth, serialize }: HttpContext) {
     const user = auth.getUserOrFail()
     if (user.currentAccessToken) {
       await User.accessTokens.delete(user, user.currentAccessToken.identifier)
     }
 
-    return {
-      message: 'Logged out successfully',
-    }
+    return serialize({ message: 'Logged out successfully' })
   }
 }
