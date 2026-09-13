@@ -12,7 +12,7 @@
 |---|---:|---:|---:|---:|---:|---:|
 | `auth` | 19 | 46 | — | — | 28 | parcial, ver §2 |
 | `tasks` | 33 | 127 | 12 | 118 | 41 | 18 de 18 requisitos de sistema, ver §3 |
-| transversal | — | — | — | — | 8 | 6 de forma de los errores, 2 de aislamiento de la base |
+| transversal | — | — | — | — | 15 | 6 de forma de los errores, 2 de aislamiento de la base, 6 de nombres de regla (H-05) y 1 del documento OpenAPI servido (H-35) |
 
 **Al empezar este trabajo la fila de `tasks` decía 0.** Las 20 pruebas que existían eran todas de `auth`, el andamiaje que venía con el repo. Los tres módulos anteriores se dedicaron a especificar la gestión de tareas, y de los 124 escenarios escritos no se verificaba ninguno.
 

@@ -106,7 +106,7 @@ Idéntica. La base de test vive aparte, en `tmp/db-test.sqlite3`, y no está ver
 
 ## H-02 · Cero pruebas automatizadas en todo el proyecto
 
-**Severidad: alta.** **Cerrado.** De cero pruebas a **83 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
+**Severidad: alta.** **Cerrado.** De cero pruebas a **84 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
 
 | | Estado |
 |---|---|
@@ -801,6 +801,8 @@ Se retira `openapi.registerRoutes()` y las tres rutas se registran en `start/rou
 
 **Lo que este arreglo no hace**: corregir la librería. `buildDocument()` sigue acumulando si se la llama dos veces en el mismo proceso. Lo que se ha hecho es llamarla una sola vez.
 
+> **Y no la llamaba una sola vez.** La caché se rellenaba después del `await`, así que dos peticiones simultáneas al arrancar lanzaban dos construcciones solapadas. Lo encontró el revisor de CI tres días después, y es [H-35](#h-35--la-caché-del-contrato-servido-dejaba-pasar-dos-construcciones-a-la-vez).
+
 ## H-27 · La puerta del revisor buscaba el PR con una consulta que nunca encuentra nada
 
 **Rama: `feat/portar-cierres-modulo-4` en adelante. Severidad: alta.** **Cerrado** el 2026-09-09.
@@ -1038,6 +1040,31 @@ Resultado: **seis historias implementadas y probadas seguían en «Tareas por ha
 **Y hay un segundo hallazgo dentro, sobre el tablero**: LID-12 a LID-16 son una descomposición que **solo existió en Jira**. La historia dice que sale con **un solo ticket**, FS-142.1, y que no hay ticket de frontend en ese alcance. Cinco subtareas siguiéndole la pista a un trabajo que el repositorio nunca declaró así. Es el hermano de [H-33](#h-33--el-tablero-de-jira-llevaba-dieciséis-días-contradiciendo-al-repositorio): allí el tablero iba por detrás, aquí iba por su cuenta.
 
 **Qué lo vigilaría**: nada automático. Va con [R-13](auditoria-reglas-de-proceso.md) y con H-33 a la tercera categoría, la de lo que no se puede comprobar. Lo único que se puede hacer es lo que se ha hecho: dejar escrito en el propio criterio qué se decidió y cuándo, para que la próxima vez se lea antes de construir.
+
+## H-35 · La caché del contrato servido dejaba pasar dos construcciones a la vez
+
+**Rama: `feat/sesion-5-guardarrailes`. Severidad: media.** **Cerrado** el 2026-09-12, el día que se encontró. Lo introdujo el arreglo de [H-26](#h-26--el-documento-servido-en-apijson-crece-en-cada-petición).
+
+El arreglo de H-26 construía el documento de `/api.json` una sola vez y lo guardaba:
+
+```ts
+contratoServido ??= JSON.stringify(await openapi.buildDocument())
+```
+
+`??=` comprueba la caché al empezar, pero no asigna hasta que el `await` resuelve. Dos peticiones que lleguen mientras se construye ven las dos la caché vacía y lanzan **dos construcciones solapadas**, que es exactamente lo que H-26 había que evitar.
+
+**Lo encontró el revisor adversarial de CI**, sobre el commit de H-03, citando la línea y el caso. No lo buscaba nadie.
+
+**Cómo se verificó**, y el orden importa porque la primera reproducción no salió:
+
+1. **Por HTTP, no se reproduce.** Servidor de desarrollo en frío, 8 y luego 40 peticiones simultáneas a `/api.json` y `/api.yaml`: cero repetidos y documento idéntico al fichero. En desarrollo los controladores ya están importados, la construcción termina en microtareas, y la segunda petición no llega a atenderse hasta que la primera ha terminado. **No reproducir por HTTP no lo descartaba**: un arranque en frío con imports reales abre la ventana.
+2. **Llamando a la función, sí, y de forma determinista.** Con el mismo arranque que `bin/openapi.ts`: dos llamadas seguidas a `buildDocument()` dan 0 y 3 parámetros repetidos, que es H-26. **Cuatro simultáneas dan 9, 9, 9 y 9**, el mismo documento las cuatro. No es que gane la última construcción: con solapamiento salen **todas** corruptas, y esa queda cacheada para toda la vida del proceso.
+
+**El arreglo**: se cachea **la promesa**, que se asigna antes de ceder el control, así que una segunda petición espera a la misma construcción. Si la construcción falla se vacía la caché, para no servir el fallo durante toda la vida del proceso. Se mueve de `start/routes.ts` a `contratoServido()` en `app/openapi/document.ts` para poder probarla.
+
+**Qué lo vigila**: `tests/functional/contrato_servido.spec.ts`, que llama a `contratoServido()` cuatro veces a la vez y exige cero repetidos y un único documento. Llama a la función y **no** va por HTTP a propósito: por HTTP pasaría con el defecto puesto, que es la trampa del punto 1. En rojo con la caché anterior (`expected [ …(9) ] to deeply equal []`, también dentro de la suite completa), en verde con la nueva: 84 de 84.
+
+**Lo que enseña**: H-26 se cerró midiendo cuatro peticiones **seguidas**, y el defecto nuevo solo existe con peticiones **simultáneas**. Otra vez la mutación contigua a la que se comprobó.
 
 ---
 

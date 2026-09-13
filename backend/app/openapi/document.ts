@@ -17,6 +17,31 @@ export async function construirDocumento(): Promise<OpenAPIDocument> {
   return openapi.buildDocument()
 }
 
+let contrato: Promise<string> | null = null
+
+/**
+ * El documento que sirven `/api.json` y `/api.yaml`, construido una sola vez
+ * por proceso (H-26).
+ *
+ * Se cachea **la promesa**, no el resultado: se asigna antes del primer
+ * `await`, así que una segunda petición que llegue mientras se construye
+ * espera a la misma construcción en vez de lanzar otra. Cacheando el texto,
+ * dos construcciones solapadas salían las dos con parámetros repetidos (H-35).
+ *
+ * Si la construcción falla se vacía la caché, para que el fallo no quede
+ * servido durante toda la vida del proceso.
+ */
+export function contratoServido(): Promise<string> {
+  contrato ??= openapi
+    .buildDocument()
+    .then((documento) => JSON.stringify(documento))
+    .catch((error) => {
+      contrato = null
+      throw error
+    })
+  return contrato
+}
+
 /**
  * Una sola serialización para los dos comandos: dos espacios y salto final.
  * Si cada uno eligiera la suya, el check fallaría por la indentación y no por

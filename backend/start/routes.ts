@@ -11,6 +11,7 @@ import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
 import openapi from '@foadonis/openapi/services/main'
+import { contratoServido } from '#openapi/document'
 import YAML from 'yaml'
 
 router.get('/', () => {
@@ -37,30 +38,25 @@ router.get('/', () => {
  * A partir de la segunda, el documento servido **no es OpenAPI válido**: la
  * especificación exige que `name` + `in` sea única dentro de una operación.
  *
- * Aquí se construye **una sola vez** y se reutiliza. La caché no distingue
- * entornos porque el problema tampoco: en producción el documento no cambia
- * mientras el proceso vive, y en desarrollo el servidor se reinicia con cada
- * cambio que lo afectaría.
+ * Aquí se construye **una sola vez** y se reutiliza: es `contratoServido()`,
+ * en `app/openapi/document.ts`. La caché no distingue entornos porque el
+ * problema tampoco: en producción el documento no cambia mientras el proceso
+ * vive, y en desarrollo el servidor se reinicia con cada cambio que lo
+ * afectaría.
  */
-let contratoServido: string | null = null
-async function contrato() {
-  contratoServido ??= JSON.stringify(await openapi.buildDocument())
-  return contratoServido
-}
-
 router.get('/api', async ({ response }) => {
   return response.header('Content-Type', 'text/html').send(openapi.generateUi('/api.json'))
 })
 
 router.get('/api.json', async ({ response }) => {
-  return response.header('Content-Type', 'application/json').send(await contrato())
+  return response.header('Content-Type', 'application/json').send(await contratoServido())
 })
 
 router.get('/api.yaml', async ({ response }) => {
   // Se parte del mismo JSON cacheado y no de una segunda construcción: dos
   // documentos que deberían ser el mismo y se construyen por separado es
   // justamente lo que hace falta evitar.
-  const yaml = YAML.stringify(JSON.parse(await contrato()))
+  const yaml = YAML.stringify(JSON.parse(await contratoServido()))
   return response.header('Content-Type', 'application/yaml').send(yaml)
 })
 
