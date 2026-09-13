@@ -174,7 +174,11 @@ jobs:
             exit 0
           fi
 
-          git remote add upstream "https://github.com/$upstream.git"
+          if git remote get-url upstream >/dev/null 2>&1; then
+            git remote set-url upstream "https://github.com/$upstream.git"
+          else
+            git remote add upstream "https://github.com/$upstream.git"
+          fi
           git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
 
           base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
@@ -428,7 +432,7 @@ jobs:
           {
             echo "## Revisión adversarial"
             echo
-            echo "> Automática, sobre \`${{ github.sha }}\`. Read-only, no bloquea."
+            echo "> Automática, sobre \`${{ github.sha }}\`. No bloquea; si no puede comentar en el PR, el informe queda en el resumen del job."
             echo "> Los criterios están en [\`REVIEW.md\`](REVIEW.md), que es la que se le inyecta."
             echo
             cat /tmp/informe.md
