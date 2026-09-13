@@ -175,18 +175,18 @@ jobs:
             exit 0
           fi
 
-          if git remote get-url upstream >/dev/null 2>&1; then
-            git remote set-url upstream "https://github.com/$upstream.git"
-          else
-            git remote add upstream "https://github.com/$upstream.git"
-          fi
-          git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
-
-          base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
           anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
           if [ -n "$anterior" ]; then
             base="refs/unidad-anterior"
             echo "revisando solo esta unidad, sobre \`$anterior\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            if git remote get-url upstream >/dev/null 2>&1; then
+              git remote set-url upstream "https://github.com/$upstream.git"
+            else
+              git remote add upstream "https://github.com/$upstream.git"
+            fi
+            git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
+            base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
           fi
 
           echo "base=$base" >> "$GITHUB_OUTPUT"
