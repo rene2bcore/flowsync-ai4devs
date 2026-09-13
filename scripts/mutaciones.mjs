@@ -45,7 +45,10 @@ const pruebas = (fichero) => ({
   nombre: `backend: ${fichero}`,
   cwd: 'backend',
   args: ['ace', 'test', `--files=${fichero}`],
-  fallo: /^\s*>\s/,
+  // Japa marca la prueba fallida con `❯` donde el terminal admite Unicode y
+  // con `>` donde no, que es Windows. Solo con `>`, las doce entradas de Japa
+  // salieron en Linux como «rojo por otro motivo».
+  fallo: /^\s*[>❯]\s/,
 })
 const VERIFICADOR = {
   nombre: 'verificar-docs',
