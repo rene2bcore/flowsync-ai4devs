@@ -21,6 +21,12 @@ import testUtils from '@adonisjs/core/services/test_utils'
  *
  * Esta suite ata los ocho contra la API de verdad. No comprueba el mensaje
  * -eso es del frontend- sino que el identificador siga llegando.
+ *
+ * Cada petición que provoca un nombre vive en `EMISORES`, y la usan tanto su
+ * prueba como la del cierre. Hasta el 2026-09-12 el cierre leía un `Set` que
+ * rellenaban las pruebas anteriores del grupo, así que lanzado solo con
+ * `--tests` -uso documentado en CLAUDE.md- decía que la API no emitía ninguno
+ * de los ocho. Lo encontró el revisor de CI.
  */
 test.group('Contrato | los nombres de regla que el frontend traduce', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -37,123 +43,115 @@ test.group('Contrato | los nombres de regla que el frontend traduce', (group) =>
     'enum',
   ]
 
-  const emitidos = new Set<string>()
+  const reglas = (lista: { rule?: string }[]) =>
+    lista.map(({ rule }) => rule).filter((rule): rule is string => Boolean(rule))
 
-  function anotar(lista: { rule?: string }[]) {
-    for (const { rule } of lista) if (rule) emitidos.add(rule)
-    return lista
-  }
-
-  async function sesion(client: ApiClient) {
-    const user = await User.create({
-      fullName: 'Ada Lovelace',
-      email: 'ada@example.com',
-      password: 'secreto123',
-    })
+  async function sesion(client: ApiClient, email: string) {
+    const user = await User.create({ fullName: 'Ada Lovelace', email, password: 'secreto123' })
     const respuesta = await client
       .post('/api/v1/auth/login')
-      .json({ email: 'ada@example.com', password: 'secreto123' })
+      .json({ email, password: 'secreto123' })
     return { user, token: (respuesta.body() as { data: { token: string } }).data.token }
   }
 
-  test('el alta emite required, email, minLength y sameAs', async ({ client, assert }) => {
-    const sinNada = anotar(errores(await client.post('/api/v1/auth/signup').json(invalido({}))))
-    assert.includeMembers(
-      sinNada.map((e) => e.rule),
-      ['required']
-    )
+  /**
+   * Cada uno provoca sus nombres contra la API y devuelve los que llegaron.
+   * Cada uno con su propia cuenta, para que el cierre pueda lanzarlos todos
+   * seguidos sin que choquen en la unicidad del email.
+   */
+  const EMISORES = {
+    async altaVacia(client: ApiClient) {
+      return reglas(errores(await client.post('/api/v1/auth/signup').json(invalido({}))))
+    },
 
-    const malos = anotar(
-      errores(
-        await client.post('/api/v1/auth/signup').json(
-          invalido({
-            fullName: null,
-            email: 'esto-no-es-un-email',
-            password: 'corta',
-            passwordConfirmation: 'otra-distinta',
-          })
+    async altaMala(client: ApiClient) {
+      return reglas(
+        errores(
+          await client.post('/api/v1/auth/signup').json(
+            invalido({
+              fullName: null,
+              email: 'esto-no-es-un-email',
+              password: 'corta',
+              passwordConfirmation: 'otra-distinta',
+            })
+          )
         )
       )
-    )
-    const reglas = malos.map((e) => e.rule)
-    assert.includeMembers(reglas, ['email', 'minLength', 'sameAs'])
+    },
+
+    async emailRepetido(client: ApiClient) {
+      await User.create({ fullName: 'Ada', email: 'repetido@example.com', password: 'secreto123' })
+      return reglas(
+        errores(
+          await client.post('/api/v1/auth/signup').json(
+            invalido({
+              fullName: 'Otra',
+              email: 'repetido@example.com',
+              password: 'secreto123',
+              passwordConfirmation: 'secreto123',
+            })
+          )
+        )
+      )
+    },
+
+    async tituloLargo(client: ApiClient) {
+      const { token } = await sesion(client, 'titulo@example.com')
+      return reglas(
+        errores(
+          await client
+            .post('/api/v1/tasks')
+            .bearerToken(token)
+            .json(invalido({ title: 'x'.repeat(201) }))
+        )
+      )
+    },
+
+    async estadoInventado(client: ApiClient) {
+      const { token } = await sesion(client, 'estado@example.com')
+      return reglas(
+        errores(
+          await client
+            .get('/api/v1/tasks')
+            .bearerToken(token)
+            .qs({ status: 'inventado', today: '2026-09-09' })
+        )
+      )
+    },
+
+    async fechaMala(client: ApiClient) {
+      const { user, token } = await sesion(client, 'fecha@example.com')
+      const tarea = await Task.create({ title: 'Con fecha', assigneeId: user.id })
+      return reglas(
+        errores(
+          await client
+            .put(`/api/v1/tasks/${tarea.id}/due-date`)
+            .bearerToken(token)
+            .json(invalido({ dueDate: '32 de febrero', today: '2026-09-09' }))
+        )
+      )
+    },
+  }
+
+  test('el alta emite required, email, minLength y sameAs', async ({ client, assert }) => {
+    assert.includeMembers(await EMISORES.altaVacia(client), ['required'])
+    assert.includeMembers(await EMISORES.altaMala(client), ['email', 'minLength', 'sameAs'])
   })
 
   test('un email ya registrado emite database.unique', async ({ client, assert }) => {
-    await User.create({
-      fullName: 'Ada Lovelace',
-      email: 'ada@example.com',
-      password: 'secreto123',
-    })
-
-    const lista = anotar(
-      errores(
-        await client.post('/api/v1/auth/signup').json(
-          invalido({
-            fullName: 'Otra',
-            email: 'ada@example.com',
-            password: 'secreto123',
-            passwordConfirmation: 'secreto123',
-          })
-        )
-      )
-    )
-    assert.includeMembers(
-      lista.map((e) => e.rule),
-      ['database.unique']
-    )
+    assert.includeMembers(await EMISORES.emailRepetido(client), ['database.unique'])
   })
 
   test('un título de más de 200 caracteres emite maxLength', async ({ client, assert }) => {
-    const { token } = await sesion(client)
-
-    const lista = anotar(
-      errores(
-        await client
-          .post('/api/v1/tasks')
-          .bearerToken(token)
-          .json(invalido({ title: 'x'.repeat(201) }))
-      )
-    )
-    assert.includeMembers(
-      lista.map((e) => e.rule),
-      ['maxLength']
-    )
+    assert.includeMembers(await EMISORES.tituloLargo(client), ['maxLength'])
   })
 
   test('un estado que no existe emite enum', async ({ client, assert }) => {
-    const { token } = await sesion(client)
-
-    const lista = anotar(
-      errores(
-        await client
-          .get('/api/v1/tasks')
-          .bearerToken(token)
-          .qs({ status: 'inventado', today: '2026-09-09' })
-      )
-    )
-    assert.includeMembers(
-      lista.map((e) => e.rule),
-      ['enum']
-    )
+    assert.includeMembers(await EMISORES.estadoInventado(client), ['enum'])
   })
 
   test('una fecha mal formada emite date', async ({ client, assert }) => {
-    const { user, token } = await sesion(client)
-    const tarea = await Task.create({ title: 'Con fecha', assigneeId: user.id })
-
-    const lista = anotar(
-      errores(
-        await client
-          .put(`/api/v1/tasks/${tarea.id}/due-date`)
-          .bearerToken(token)
-          .json(invalido({ dueDate: '32 de febrero', today: '2026-09-09' }))
-      )
-    )
-    assert.includeMembers(
-      lista.map((e) => e.rule),
-      ['date']
-    )
+    assert.includeMembers(await EMISORES.fechaMala(client), ['date'])
   })
 
   /**
@@ -163,8 +161,16 @@ test.group('Contrato | los nombres de regla que el frontend traduce', (group) =>
    * Si mañana alguien añade un `case` a `traducirError` sin una ruta que lo
    * emita, o quita del backend una regla que el frontend sigue traduciendo,
    * esta prueba lo dice con el nombre exacto.
+   *
+   * Lanza ella misma todos los emisores, así que no depende de que las de
+   * arriba hayan corrido antes.
    */
-  test('los ocho nombres que traduce el frontend los emite la API', async ({ assert }) => {
+  test('los ocho nombres que traduce el frontend los emite la API', async ({ client, assert }) => {
+    const emitidos = new Set<string>()
+    for (const emisor of Object.values(EMISORES)) {
+      for (const regla of await emisor(client)) emitidos.add(regla)
+    }
+
     const sinEmitir = TRADUCIDOS.filter((regla) => !emitidos.has(regla))
     assert.deepEqual(
       sinEmitir,
