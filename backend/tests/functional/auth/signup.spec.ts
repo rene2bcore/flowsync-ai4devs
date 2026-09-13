@@ -1,4 +1,5 @@
 import User from '#models/user'
+import { errores } from '#tests/helpers/api'
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 
@@ -103,6 +104,32 @@ test.group('Auth | registro', (group) => {
 
     response.assertStatus(422)
     response.assertBodyContains({ errors: [{ field: 'email' }] })
+  })
+
+  /**
+   * «La lista de errores desglosada por campo» del requisito. Las tres de
+   * arriba mandan un solo campo malo cada una, así que seguirían en verde si la
+   * respuesta trajera solo el primer error. Esta manda tres a la vez y exige
+   * los tres, uno por campo: es lo que deja al formulario marcar cada campo en
+   * un solo envío en vez de descubrirlos de uno en uno.
+   */
+  test('varios campos inválidos a la vez devuelven un error por cada uno', async ({
+    client,
+    assert,
+  }) => {
+    const response = await client.post('/api/v1/auth/signup').json({
+      fullName: 'Ada Lovelace',
+      email: 'ada-arroba-example',
+      password: 'corta',
+      passwordConfirmation: 'secreto456',
+    })
+
+    response.assertStatus(422)
+    assert.sameMembers(
+      errores(response).map(({ field, rule }) => `${field} · ${rule}`),
+      ['email · email', 'password · minLength', 'passwordConfirmation · sameAs']
+    )
+    assert.isNull(await User.findBy('fullName', 'Ada Lovelace'))
   })
 
   test('un email ya registrado no crea una segunda cuenta', async ({ client, assert }) => {

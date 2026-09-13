@@ -106,7 +106,7 @@ Idéntica. La base de test vive aparte, en `tmp/db-test.sqlite3`, y no está ver
 
 ## H-02 · Cero pruebas automatizadas en todo el proyecto
 
-**Severidad: alta.** **Cerrado.** De cero pruebas a **81 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
+**Severidad: alta.** **Cerrado.** De cero pruebas a **82 de backend y 28 de frontend**, con su trazabilidad requisito a requisito. El hueco que queda es otro y está declarado: no hay runner de navegador.
 
 | | Estado |
 |---|---|

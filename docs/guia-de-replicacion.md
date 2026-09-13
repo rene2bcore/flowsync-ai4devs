@@ -68,7 +68,7 @@ La migración crea `tmp/db.sqlite3` **y regenera `database/schema.ts`**, que est
 
 ```bash
 npm run dev     # http://localhost:3333
-npm test        # 81 pruebas functional
+npm test        # 82 pruebas functional
 ```
 
 ### Frontend
@@ -245,7 +245,7 @@ El verificador se lanza **desde la raíz** y necesita el backend instalado: preg
 openspec validate --specs; echo "specs=$?"
 ```
 
-Lo que tiene que salir hoy en la rama del port: **81 pruebas de backend, 28 de frontend, 18 comprobaciones del verificador, y cuatro ceros.**
+Lo que tiene que salir hoy en la rama del port: **82 pruebas de backend, 28 de frontend, 18 comprobaciones del verificador, y cuatro ceros.**
 
 Los mismos cuatro corren en `.github/workflows/verificacion.yml` y **bloquean**. El revisor adversarial va en un workflow aparte y **no bloquea**, a propósito: un revisor no determinista que tumba la build se desactiva la primera vez que se equivoca con prisa, y entonces no queda ni revisor ni build.
 

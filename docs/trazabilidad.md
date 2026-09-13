@@ -10,7 +10,7 @@
 
 | Capability | Requisitos | Escenarios | Historias | Criterios | Pruebas | Cobertura de criterios |
 |---|---:|---:|---:|---:|---:|---:|
-| `auth` | 19 | 45 | — | — | 26 | parcial, ver §2 |
+| `auth` | 19 | 45 | — | — | 27 | parcial, ver §2 |
 | `tasks` | 33 | 127 | 12 | 118 | 41 | 18 de 18 requisitos de sistema, ver §3 |
 | transversal | — | — | — | — | 8 | 6 de forma de los errores, 2 de aislamiento de la base |
 
@@ -40,14 +40,14 @@ El efecto sobre esta matriz es concreto: inflan el recuento de historias de 9 a 
 
 ---
 
-## 2 · `auth` · 19 requisitos, 45 escenarios, 26 pruebas
+## 2 · `auth` · 19 requisitos, 45 escenarios, 27 pruebas
 
 Es la única capability con verificación automática.
 
 | Requisito de la spec viva | Pruebas | Código |
 |---|---|---|
 | Registro de una cuenta nueva | `signup.spec.ts` · registrarse devuelve la cuenta y un token que ya sirve | `new_account_controller.ts` |
-| Validación de los datos de registro | `signup.spec.ts` · contraseña corta, confirmación que no coincide, email mal formado | `validators/user.ts` |
+| Validación de los datos de registro | `signup.spec.ts` · contraseña corta, confirmación que no coincide, email mal formado, y los tres a la vez devuelven un error por campo | `validators/user.ts` |
 | Un email, una sola cuenta | `signup.spec.ts` · un email ya registrado no crea una segunda cuenta | `validators/user.ts` |
 | El nombre puede quedar vacío | `signup.spec.ts` · una cuenta puede quedarse sin nombre | `validators/user.ts` |
 | La contraseña nunca sale | `signup.spec.ts` · la contraseña nunca sale en la respuesta | `user_transformer.ts` |
@@ -66,7 +66,10 @@ Es la única capability con verificación automática.
 | Requisito | Por qué no la tiene |
 |---|---|
 | Los 8 requisitos de pantalla (entrada a la aplicación, errores en castellano, envío en curso, la sesión sobrevive a recargar, rutas según el estado, salir de la aplicación) | Solo se observan en navegador y no hay runner de navegador |
-| Validación acumulada: varios campos inválidos a la vez devuelven todos los problemas | Verificable por API. **Hueco real, no justificado** |
+
+> **La validación acumulada salió de esta tabla el 2026-09-12.** Estaba aquí como el único hueco de `auth` sin excusa: las tres pruebas de validación del registro mandan un solo campo malo cada una, así que seguían en verde si la respuesta traía solo el primer error. Ahora `signup.spec.ts` manda tres a la vez y exige los tres, cada uno con su campo.
+>
+> Se vio fallar con un `errorReporter` de VineJS que se queda con el primer error: **3 de 82 en rojo**. Y ese número dice algo que la tabla no sabía. Las otras dos caídas son de `nombres_de_regla.spec.ts`, cuyo payload de alta también manda tres campos malos a la vez: desde que se cerró H-05 el hueco **ya estaba mordido, por accidente**. No constaba en ningún sitio, no comprobaba a qué campo va cada error, y habría desaparecido en silencio el día que alguien partiera ese payload en tres para aislar los nombres.
 
 ---
 
@@ -134,8 +137,7 @@ Al escribir pruebas, la regla es: primero los criterios que sí derivan del PRD;
 Por orden de lo que más protege:
 
 1. Un runner de navegador, si en algún momento los 15 requisitos de pantalla dejan de ser un hueco aceptable. El de Vitest ya está, y cubre `lib/api.ts`; lo que falta es el que ve la pantalla.
-2. La validación acumulada de `auth`, que es el único hueco de esa capability que no tiene excusa.
-4. Validar o descartar los 27 criterios `[PROPUESTO]` antes de escribir pruebas contra ellos.
-5. Corregir en el backlog las tres historias que son criterios, para que la cadena no arranque torcida.
+2. Validar o descartar los 27 criterios `[PROPUESTO]` antes de escribir pruebas contra ellos.
+3. Corregir en el backlog las tres historias que son criterios, para que la cadena no arranque torcida.
 
 Lo que **no** se propone: perseguir un porcentaje de cobertura. La métrica de esta matriz es qué escenario de la spec está cubierto, no qué línea se ejecuta.
