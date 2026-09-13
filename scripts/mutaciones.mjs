@@ -287,6 +287,16 @@ const CATALOGO = [
 const sinColor = (texto) => texto.replace(/\x1b\[[0-9;]*m/g, '')
 const lineas = (texto) => texto.split(/\r?\n/)
 
+/**
+ * Cuando algo no casa, la salida entera de lo que se ejecutó. Sin ella, un
+ * «rojo por otro motivo» en CI solo se puede adivinar, y la primera ejecución
+ * en Linux fue exactamente eso.
+ */
+function volcar(salida) {
+  const resto = lineas(salida).filter((l) => l.trim())
+  for (const l of resto.slice(-60)) console.log(`    | ${l}`)
+}
+
 function ejecutar({ cwd, args }) {
   const r = spawnSync(process.execPath, args, {
     cwd: join(RAIZ, cwd),
@@ -327,10 +337,13 @@ const fallos = []
 const base = new Map()
 for (const [comprobacion] of elegidas.flatMap((m) => m.muerden)) {
   if (base.has(comprobacion.nombre)) continue
-  const { status } = ejecutar(comprobacion)
+  const { status, salida } = ejecutar(comprobacion)
   base.set(comprobacion.nombre, status === 0)
   console.log(`${status === 0 ? 'verde' : 'ROJO '} sin mutar · ${comprobacion.nombre}`)
-  if (status !== 0) fallos.push(`${comprobacion.nombre} ya está en rojo sin mutar nada`)
+  if (status !== 0) {
+    fallos.push(`${comprobacion.nombre} ya está en rojo sin mutar nada`)
+    volcar(salida)
+  }
 }
 if (fallos.length) {
   console.error(`\n${fallos.join('\n')}\nSin un verde de partida, ningún rojo demuestra nada.`)
@@ -350,7 +363,7 @@ for (const m of elegidas) {
     const buscado = conEol(de)
     const veces = mutado.split(buscado).length - 1
     if (veces !== 1) noAplica.push(`aparece ${veces} veces: ${de.split('\n')[0].trim()}`)
-    else mutado = mutado.replace(buscado, conEol(a))
+    else mutado = mutado.replace(buscado, () => conEol(a))
   }
   if (noAplica.length) {
     fallos.push(`${m.id}: el catálogo ya no corresponde con ${m.fichero} (${noAplica.join('; ')})`)
@@ -372,6 +385,7 @@ for (const m of elegidas) {
           `${m.id}: ${comprobacion.nombre} sale en rojo, pero ninguna línea de fallo nombra «${motivo}»`
         )
         console.log(`  ROJO POR OTRO MOTIVO ${comprobacion.nombre}`)
+        volcar(salida)
       } else {
         console.log(`  muerde ${comprobacion.nombre} · ${motivo}`)
       }
