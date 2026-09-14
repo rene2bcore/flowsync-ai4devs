@@ -168,7 +168,11 @@ jobs:
             exit 0
           fi
 
-          git remote add upstream "https://github.com/$upstream.git"
+          if git remote get-url upstream >/dev/null 2>&1; then
+            git remote set-url upstream "https://github.com/$upstream.git"
+          else
+            git remote add upstream "https://github.com/$upstream.git"
+          fi
           git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
 
           base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
@@ -433,6 +437,5 @@ jobs:
           if ! gh pr comment "$PR" --repo "$REPO_PR" --body-file /tmp/comentario.md 2>/dev/null; then
             echo "no se pudo comentar en $REPO_PR#$PR; el informe queda aquí" \
               >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/comentario.md >> "$GITHUB_STEP_SUMMARY"
           fi
-
-          cat /tmp/comentario.md >> "$GITHUB_STEP_SUMMARY"
