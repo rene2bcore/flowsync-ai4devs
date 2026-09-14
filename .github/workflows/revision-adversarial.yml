@@ -177,8 +177,8 @@ jobs:
             git remote add upstream "https://github.com/$upstream.git"
           fi
           git fetch --quiet upstream "$(echo "$pr" | jq -r '.[0].baseRefName')"
-
-          base="upstream/$(echo "$pr" | jq -r '.[0].baseRefName')"
+          git update-ref refs/revision-base FETCH_HEAD
+          base="refs/revision-base"
           anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
           if [ -n "$anterior" ]; then
             base="refs/unidad-anterior"
