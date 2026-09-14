@@ -144,7 +144,7 @@ jobs:
 
             echo "base=$base" >> "$GITHUB_OUTPUT"
             echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-            echo "repo_pr=${{ github.repository }}" >> "$GITHUB_OUTPUT"
+            echo "repo_pr=${{ github.event.pull_request.base.repo.full_name }}" >> "$GITHUB_OUTPUT"
             echo "seguir=si" >> "$GITHUB_OUTPUT"
             exit 0
           fi
