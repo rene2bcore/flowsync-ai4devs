@@ -131,8 +131,11 @@ jobs:
           upstream="LIDR-academy/flowsync-ai4devs"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --quiet origin "${{ github.base_ref }}"
-            base="origin/${{ github.base_ref }}"
+            git fetch --quiet \
+              "https://github.com/${{ github.event.pull_request.base.repo.full_name }}.git" \
+              "${{ github.base_ref }}"
+            git update-ref refs/revision-base FETCH_HEAD
+            base="refs/revision-base"
             anterior=$(unidad_anterior "$rama" "$duenio" "$upstream" || true)
             if [ -n "$anterior" ]; then
               base="refs/unidad-anterior"
