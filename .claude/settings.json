@@ -12,6 +12,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Comprobando que no salgan secretos, correos ni .env...",
+            "timeout": 15,
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/datos-que-no-salen.sh\""
+          }
+        ]
+      }
     ]
   }
 }
