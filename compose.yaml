@@ -1,0 +1,39 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: flowsync
+      POSTGRES_PASSWORD: flowsync
+      POSTGRES_DB: flowsync
+    ports:
+      - '54410:5432'
+    volumes:
+      - flowsync_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U flowsync -d flowsync']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Base de pruebas: sin volumen, con el directorio de datos en tmpfs. Cada
+  # `docker compose down` (o un reinicio del contenedor) la deja en blanco a
+  # propósito, para que las suites functional arranquen siempre contra un
+  # esquema limpio.
+  db-test:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: flowsync_test
+      POSTGRES_PASSWORD: flowsync_test
+      POSTGRES_DB: flowsync_test
+    ports:
+      - '54411:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U flowsync_test -d flowsync_test']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  flowsync_db_data:
