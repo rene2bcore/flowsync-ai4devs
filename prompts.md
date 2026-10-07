@@ -26,20 +26,20 @@ Añade a la capability `tasks` el endpoint `DELETE /api/v1/tasks/:id`, que borra
 Añade a la capability `tasks` el endpoint `DELETE /api/v1/tasks/:id`, que borra una tarea y devuelve `204` sin cuerpo. Impleméntalo en el controlador que ya existe y declara su ruta junto a las demás de `tasks`.
 ```
 
-**Qué salió:** sesión `cb313720`. El README quedó al día, y por un momento pareció que la regla no hacía falta. No valía: `AGENTS.md` es byte a byte idéntico a `CLAUDE.md` y lleva la misma regla, y en el historial de esa sesión se ve al agente ejecutar `cat AGENTS.md`. La medición no medía lo que creía medir.
+**Qué salió:** sesión `cb313720`. El README quedó al día, y por un momento pareció que la regla no hacía falta. No valía como control: en el historial de esa sesión se ve al agente leer el `README.md` de la raíz, que cita la regla textualmente en su línea 70, así que la regla le llegó igual. `AGENTS.md` no tuvo nada que ver: es un symlink a `CLAUDE.md` y, con `CLAUDE.md` fuera, `cat AGENTS.md` le respondió «No such file or directory». La medición no medía lo que creía medir.
 
 ---
 
 ## Prompt 3 · el mismo encargo, control limpio
 
 **Modelo:** Sonnet 5 (`claude-sonnet-5`), con Haiku 4.5 (`claude-haiku-4-5`) en subtareas
-**Herramienta:** la misma, retirando del repositorio `CLAUDE.md` **y** `AGENTS.md` antes de lanzarlo
+**Herramienta:** la misma, retirando del repositorio `CLAUDE.md` y `AGENTS.md` antes de lanzarlo (retirar `AGENTS.md` no cambió nada: es un symlink que ya estaba roto)
 
 ```
 Añade a la capability `tasks` el endpoint `DELETE /api/v1/tasks/:id`, que borra una tarea y devuelve `204` sin cuerpo. Impleméntalo en el controlador que ya existe y declara su ruta junto a las demás de `tasks`.
 ```
 
-**Qué salió:** sesión `d5731708`, 35 turnos. Declaró la ruta y escribió el controlador, y no tocó el README de la capability ni `docs/api/openapi.json`. Tampoco creó rama ni commit.
+**Qué salió:** sesión `d5731708`, 35 turnos. En ninguna de sus herramientas apareció el texto de la regla. Declaró la ruta y escribió el controlador, y no tocó el README de la capability ni `docs/api/openapi.json`. Tampoco creó rama ni commit.
 
 ---
 
@@ -48,7 +48,7 @@ Añade a la capability `tasks` el endpoint `DELETE /api/v1/tasks/:id`, que borra
 **Modelo:** Opus 5 (`claude-opus-5`)
 **Herramienta:** Claude Code Desktop en Windows, sesión abierta en otro repositorio y operando sobre WSL
 
-**Qué salió:** montó el proyecto (`make setup`, y 23 tests en verde antes de medir nada), preguntó la apuesta antes de lanzar el primer intento, ejecutó los cinco intentos con la comprobación previa de base limpia y el reset duro posterior, recogió la evidencia de cada uno y escribió `docs/evals/RLL.md`. Los controles salieron de dos instrucciones posteriores: «lanza el control y luego abre el PR», y, al descubrirse lo de `AGENTS.md`, «sí, relanza el control limpio y actualiza el PR».
+**Qué salió:** montó el proyecto (`make setup`, y 23 tests en verde antes de medir nada), preguntó la apuesta antes de lanzar el primer intento, ejecutó los cinco intentos con la comprobación previa de base limpia y el reset duro posterior, recogió la evidencia de cada uno y escribió `docs/evals/RLL.md`. Los controles salieron de dos instrucciones posteriores: «lanza el control y luego abre el PR», y, al creer que `AGENTS.md` era una copia de la regla, «sí, relanza el control limpio y actualiza el PR». La corrección de ese error, al ver en el módulo 9 que `AGENTS.md` es un symlink, salió de «sí, haz las tres correcciones».
 
 ---
 

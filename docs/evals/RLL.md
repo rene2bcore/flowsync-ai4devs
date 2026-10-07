@@ -1,6 +1,6 @@
 # Eval · la regla del README de capability
 
-Medición de una regla de proceso del `CLAUDE.md` de este proyecto, hecha el 21 y el 22 de septiembre de 2026.
+Medición de una regla de proceso del `CLAUDE.md` de este proyecto, hecha el 21 y el 22 de septiembre de 2026, y corregida el 6 de octubre (ver «Corrección» al final de la parte A).
 
 Regla medida, literal:
 
@@ -45,21 +45,24 @@ Antes de cada intento se comprueba que la base es idéntica, y se aborta si no l
 
 **Resultado: 5 de 5.** En los cinco intentos la fila nueva aparece en la tabla de endpoints del README, con la forma que ya usaban las demás filas: `DELETE /tasks/:id` apuntando a `TasksController.destroy` y con `204 · sin cuerpo`. Los cinco tocaron además `docs/api/openapi.json`, y tres escribieron un test funcional que nadie pidió.
 
-### La condición de control, y el primer intento de control que no medía nada
+### La condición de control, y lo que de verdad decidió el resultado
 
-Un 5 de 5 no dice cuánto de eso lo hace la regla, así que se repitió el encargo con el archivo de instrucciones fuera del repositorio. El primer intento de control **no valía**, y merece quedar escrito porque es el error que el módulo avisa:
+Un 5 de 5 no dice cuánto de eso lo hace la regla, así que se repitió el encargo dos veces con el `CLAUDE.md` del proyecto fuera del repositorio. En los historiales de las dos sesiones se ve si el texto de la regla llegó o no al contexto del agente por otra vía:
 
-| Intento de control | Qué se retiró | Ruta `DELETE` | README al día | Por qué |
+| Intento de control | Qué se retiró | ¿Le llegó la regla al agente? | Ruta `DELETE` | README al día |
 | --- | --- | --- | --- | --- |
-| `cb313720` | solo `CLAUDE.md` | sí | sí | **inválido**: `AGENTS.md` es byte a byte idéntico a `CLAUDE.md` y lleva la misma regla; en el historial de esa sesión se ve al agente ejecutar `cat AGENTS.md` |
-| `d5731708` | `CLAUDE.md` y `AGENTS.md` | sí | **no** | control limpio |
+| `cb313720` | `CLAUDE.md` | **sí**: leyó el `README.md` de la raíz, que la cita textualmente en su línea 70 como parte del enunciado | sí | sí |
+| `d5731708` | `CLAUDE.md` y `AGENTS.md` | **no**: ninguna de sus herramientas devolvió el texto de la regla | sí | **no** |
 
-El control limpio (35 turnos, 2m 06s) implementó el endpoint y el controlador, **no tocó ni el README de la capability ni `docs/api/openapi.json`**, y no creó rama ni commit. Es decir: la regla sí está comprando el comportamiento que parecía comprar. Y aun así el `README.md` de la raíz cita la regla textualmente en su línea 70, como parte del enunciado del ejercicio, sin que eso bastara para que se aplicara.
+Retirar `AGENTS.md` no cambió nada: es un symlink a `CLAUDE.md`, y con `CLAUDE.md` fuera ya está roto (en el primer control, `cat AGENTS.md` respondió «No such file or directory»). Las dos ejecuciones son la misma condición; lo que las separa es que una se encontró la regla en el `README.md` de la raíz y la otra no.
 
 | Condición | Ruta `DELETE` | README al día | Rama `feat/…` | Commit |
 | --- | --- | --- | --- | --- |
-| Con instrucciones (5 intentos) | 5/5 | 5/5 | 5/5 | 2/5 |
-| Sin instrucciones (control limpio) | sí | no | no | no |
+| Con `CLAUDE.md` (5 intentos), que se carga siempre | 5/5 | 5/5 | 5/5 | 2/5 |
+| Sin `CLAUDE.md`, la regla le llegó por el `README.md` | sí | sí | no | no |
+| Sin `CLAUDE.md`, la regla no le llegó | sí | no | no | no |
+
+La lectura: el README de la capability quedó al día cada vez que el texto de la regla llegó al contexto del agente, y no quedó la única vez que no llegó. La regla sí compra el comportamiento, pero solo si el agente la ve; con `CLAUDE.md` la ve siempre, y sin él depende de qué archivos se le ocurra abrir. Ninguno de los dos controles es limpio del todo: para eso habría que neutralizar también la cita de la línea 70 del `README.md`, y no se hizo.
 
 Coste de todo: 11,00 USD y unos 37 minutos de reloj para las siete ejecuciones.
 
@@ -67,16 +70,20 @@ Coste de todo: 11,00 USD y unos 37 minutos de reloj para las siete ejecuciones.
 
 La regla tiene dos mitades, y la otra se cumplió **2 de 5**: «se cierra en el mismo commit». Tres intentos dejaron todo el trabajo sin commitear. La mitad que el ejercicio manda medir es la que sale bien; la que no se mide es la que falla.
 
-Y la regla vive dos veces: `CLAUDE.md` y `AGENTS.md` son el mismo archivo duplicado. Hoy dicen lo mismo, y por eso el primer control no midió nada.
+Y la regla vive dos veces: en `CLAUDE.md` y citada en el `README.md` de la raíz, como enunciado del ejercicio. Por esa segunda copia el primer control no midió lo que pretendía.
 
 ### En qué condiciones está medido
 
 Las siete sesiones se lanzaron sin interfaz (`claude -p`, Claude Code 2.1.272 en WSL) desde la raíz del repositorio, con los permisos concedidos de antemano, y las resolvió Sonnet 5 (con Haiku 4.5 en subtareas). Los controles retiran los archivos de instrucciones del proyecto, no el `CLAUDE.md` de usuario de la máquina, que sigue cargándose en las siete. Una sesión interactiva, otro modelo u otro día son otra medición.
 
+### Corrección
+
+Una versión anterior de este documento decía que el primer control no valía porque `AGENTS.md` era una copia byte a byte de `CLAUDE.md` y el agente la había leído, y llamaba «control limpio» al segundo. Era falso, y el error fue de la medición: comparé los dos archivos bajándolos por la API de GitHub, que sigue el symlink y devuelve el contenido del destino, y me salieron idénticos. En git, `AGENTS.md` es un symlink (modo `120000`, nueve bytes). Lo que hizo llegar la regla al primer control fue el `README.md` de la raíz.
+
 ## Parte B · las tres líneas
 
-**1. Apuesta y resultado.** Aposté 2 de 5 y salió 5 de 5, con las cinco ejecuciones hechas, y el control sin instrucciones salió 0 de 1: me equivoqué en la dirección de la sorpresa, que es justo para lo que servía escribir la apuesta antes.
+**1. Apuesta y resultado.** Aposté 2 de 5 y salió 5 de 5, con las cinco ejecuciones hechas; sin `CLAUDE.md` salió 1 de 2, y la que cumplió había leído la regla en el `README.md` de la raíz: me equivoqué en la dirección de la sorpresa, que es justo para lo que servía escribir la apuesta antes.
 
-**2. Qué haría con ese número.** Convertirla en algo que se ejecute solo, sin borrarla, porque el control dice que sin ella el README no se toca, así que la regla sí está haciendo trabajo: lo que no hace es garantizarlo, porque 5 de 5 con cinco intentos no distingue entre cumplirse siempre y cumplirse la mitad de las veces, y la otra mitad de la misma regla ya falla 3 de 5; un check que mire el diff (si toca rutas, controladores, validadores o transformers de una capability y no toca su README, rojo) cuesta menos que seguir midiendo, y de paso borraría la copia duplicada, porque una regla escrita dos veces en dos archivos idénticos son dos reglas que algún día van a divergir.
+**2. Qué haría con ese número.** Convertirla en algo que se ejecute solo, sin borrarla, porque los controles dicen que el README se actualiza cuando el agente ve la regla y no cuando no la ve: la regla sí hace trabajo, pero depende de que su texto llegue al contexto, y fuera de `CLAUDE.md` eso depende de qué archivos se le ocurra abrir; 5 de 5 con cinco intentos tampoco distingue entre cumplirse siempre y cumplirse la mitad de las veces, y la otra mitad de la misma regla ya falla 3 de 5; un check que mire el diff (si toca rutas, controladores, validadores o transformers de una capability y no toca su README, rojo) no depende de lo que el agente haya leído.
 
 **3. Una cosa que esta medición no está midiendo.** Si lo que el README dice es verdad: la comprobación es un `grep` que se conforma con que la línea exista, y nadie ejecutó el endpoint para ver si de verdad responde `204` sin cuerpo, así que un README que documentara mal el endpoint puntuaría igual de bien que uno correcto.
