@@ -62,3 +62,29 @@ Cuando termines, levanta las dos bases, migra las dos y corre la batería de pru
 ```
 
 **Qué salió:** sesión `b318d818`, 34 turnos, unos 5 minutos. Escribió `compose.yaml` con `db-test` en `tmpfs`, cambió la conexión a `pg` y los atajos del Makefile (`db-up` con `--wait`, `db-down`, `migrate` de las dos bases, `test`), y dejó las 23 pruebas en verde. No tocó ninguna migración ni el dump. Renombró el bloque de SQLite en su sitio en vez de sustituirlo por el de PostgreSQL que venía comentado, y por eso conservó `schemaGeneration` y sus reglas: `schema.ts` salió idéntico. No commiteó; los cambios se commitearon después desde la terminal.
+
+---
+
+## Prompt 3 · la instrucción al orquestador para comprobar la duda del huso
+
+**Modelo:** Opus 5.5 (`claude-opus-5-5`)
+**Herramienta:** Claude Code Desktop en Windows, en una sesión posterior a la del Prompt 1, abierta en otro repositorio y operando sobre WSL
+
+```
+Cierra también los huecos de S9, S10 y S11
+```
+
+**Qué salió:** respondía a la lista de huecos que el orquestador lleva de las sesiones anteriores; de la s10 quedaba la duda del punto 3 de `HALLAZGOS.md`. Comprobó primero la premisa: WSL está en `America/Mexico_City`, y la API sale en UTC por el `TZ=UTC` de `backend/.env`, que `@adonisjs/env` 7.0.0 solo aplica si el proceso no trae `TZ`. Repitió la llamada de la parte B (una tarea que vence el 2026-08-19 y un `GET` con `today=2026-08-20`) con la API en UTC, en México y en Tokio: la de `motor-RLL` contra `db-test`, sin tocar la base de desarrollo, y la de `s10/start`, con SQLite, en un worktree aparte. Con PostgreSQL, en Tokio la fecha vuelve como `2026-08-18T15:00:00.000Z`; con SQLite, como `2026-08-19` en los tres husos. `make test` dio 23 de 23 en los tres. En ese momento solo se anotó fuera del repositorio, porque el repositorio del curso responde 404.
+
+---
+
+## Prompt 4 · la instrucción al orquestador para llevar la comprobación a la rama
+
+**Modelo:** Opus 5.5 (`claude-opus-5-5`)
+**Herramienta:** la misma sesión que el Prompt 3
+
+```
+¿Qué huecos quedan en Estatus S1-S13?, lo que este abierto resuélvelo y documento de nuevo.
+```
+
+**Qué salió:** el repositorio del curso sigue en 404, pero el fork sigue publicado, así que el orquestador añadió la comprobación como viñeta debajo de la línea del punto 3 de `HALLAZGOS.md`, sin cambiar la línea entregada. Si el PR sigue vivo, la recoge al subir la rama; no se puede comprobar mientras el repositorio del curso responda 404.
